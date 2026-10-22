@@ -405,18 +405,21 @@ wait(uint64 addr)
         acquire(&pp->lock);
 
         havekids = 1;
-        if(pp->state == ZOMBIE){
-          // Found one.
+                if(pp->state == ZOMBIE){
           pid = pp->pid;
-          if(addr != 0 && copyout(p->pagetable, addr, (char *)&pp->xstate,
-                                  sizeof(pp->xstate)) < 0) {
-            release(&pp->lock);
-            release(&wait_lock);
-            return -1;
-          }
+          int xstate = pp->xstate;
+
+          // Release the child's memory and references first.
           freeproc(pp);
           release(&pp->lock);
           release(&wait_lock);
+
+          // Copy status after freeing memory and releasing locks.
+          if(addr != 0 &&
+             copyout(p->pagetable, addr, (char *)&xstate,
+                     sizeof(xstate)) < 0)
+            return -1;
+
           return pid;
         }
         release(&pp->lock);
