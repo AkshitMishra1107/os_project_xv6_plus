@@ -38,13 +38,24 @@ sys_wait(void)
 uint64
 sys_sbrk(void)
 {
-  uint64 addr;
   int n;
+  struct proc *p = myproc();
+  uint64 addr = p->sz;
 
   argint(0, &n);
-  addr = myproc()->sz;
-  if(growproc(n) < 0)
-    return -1;
+
+  if(n >= 0){
+    // Reserve virtual memory without allocating physical pages.
+    if(addr + n < addr || addr + n > TRAPFRAME)
+      return -1;
+
+    p->sz = addr + n;
+  } else {
+    // Shrinking still releases allocated pages.
+    if(growproc(n) < 0)
+      return -1;
+  }
+
   return addr;
 }
 

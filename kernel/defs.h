@@ -187,3 +187,4 @@ void            virtio_disk_intr(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+int handle_page_fault(struct proc*, uint64, int);

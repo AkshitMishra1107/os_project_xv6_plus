@@ -3,9 +3,40 @@
 #include "memlayout.h"
 #include "elf.h"
 #include "riscv.h"
+#include "spinlock.h"
+#include "proc.h"
 #include "defs.h"
 #include "fs.h"
 
+
+// Returns the physical page with interrupts disabled.
+// The caller must call pop_off() after accessing that page.
+// On failure, returns 0 with interrupts restored.
+static uint64
+pin_user_page(pagetable_t pagetable, uint64 va, int write)
+{
+  struct proc *p = myproc();
+
+  for(int tries = 0; tries < 8; tries++){
+    push_off();
+
+    if(va < MAXVA){
+      pte_t *pte = walk(pagetable, va, 0);
+      uint64 need = PTE_V | PTE_U | (write ? PTE_W : 0);
+
+      if(pte && (*pte & need) == need)
+        return PTE2PA(*pte);
+    }
+
+    pop_off();
+
+    if(pagetable != p->pagetable ||
+       handle_page_fault(p, va, write) < 0)
+      return 0;
+  }
+
+  return 0;
+}
 /*
  * the kernel's page table.
  */
@@ -185,9 +216,9 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
 
   for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
     if((pte = walk(pagetable, a, 0)) == 0)
-      panic("uvmunmap: walk");
+  continue;
     if((*pte & PTE_V) == 0)
-      panic("uvmunmap: not mapped");
+  continue;
     if(PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
     if(do_free){
@@ -319,9 +350,9 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walk(old, i, 0)) == 0)
-      panic("uvmcopy: pte should exist");
-    if((*pte & PTE_V) == 0)
-      panic("uvmcopy: page not present");
+  continue;
+if((*pte & PTE_V) == 0)
+  continue;
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
@@ -359,26 +390,25 @@ int
 copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 {
   uint64 n, va0, pa0;
-  pte_t *pte;
 
   while(len > 0){
     va0 = PGROUNDDOWN(dstva);
-    if(va0 >= MAXVA)
+    pa0 = pin_user_page(pagetable, va0, 1);
+    if(pa0 == 0)
       return -1;
-    pte = walk(pagetable, va0, 0);
-    if(pte == 0 || (*pte & PTE_V) == 0 || (*pte & PTE_U) == 0 ||
-       (*pte & PTE_W) == 0)
-      return -1;
-    pa0 = PTE2PA(*pte);
+
     n = PGSIZE - (dstva - va0);
     if(n > len)
       n = len;
+
     memmove((void *)(pa0 + (dstva - va0)), src, n);
+    pop_off();
 
     len -= n;
     src += n;
     dstva = va0 + PGSIZE;
   }
+
   return 0;
 }
 
@@ -392,18 +422,22 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 
   while(len > 0){
     va0 = PGROUNDDOWN(srcva);
-    pa0 = walkaddr(pagetable, va0);
+    pa0 = pin_user_page(pagetable, va0, 0);
     if(pa0 == 0)
       return -1;
+
     n = PGSIZE - (srcva - va0);
     if(n > len)
       n = len;
+
     memmove(dst, (void *)(pa0 + (srcva - va0)), n);
+    pop_off();
 
     len -= n;
     dst += n;
     srcva = va0 + PGSIZE;
   }
+
   return 0;
 }
 
@@ -419,33 +453,33 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 
   while(got_null == 0 && max > 0){
     va0 = PGROUNDDOWN(srcva);
-    pa0 = walkaddr(pagetable, va0);
+    pa0 = pin_user_page(pagetable, va0, 0);
     if(pa0 == 0)
       return -1;
+
     n = PGSIZE - (srcva - va0);
     if(n > max)
       n = max;
 
-    char *p = (char *) (pa0 + (srcva - va0));
+    char *p = (char *)(pa0 + (srcva - va0));
+
     while(n > 0){
       if(*p == '\0'){
         *dst = '\0';
         got_null = 1;
         break;
-      } else {
-        *dst = *p;
       }
+
+      *dst = *p;
       --n;
       --max;
       p++;
       dst++;
     }
 
+    pop_off();
     srcva = va0 + PGSIZE;
   }
-  if(got_null){
-    return 0;
-  } else {
-    return -1;
-  }
+
+  return got_null ? 0 : -1;
 }
