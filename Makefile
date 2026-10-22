@@ -131,6 +131,8 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 UPROGS=\
 	$U/_baseline\
         $U/_lazytest\
+        $U/_cowtest\
+        $U/_forkbench\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
