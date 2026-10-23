@@ -62,6 +62,9 @@ OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
+RAM_MB ?= 128
+SWAP_POLICY ?= 1
+CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -march=rv64gc
@@ -135,6 +138,7 @@ UPROGS=\
         $U/_cowtest\
         $U/_forkbench\
         $U/_memstat \
+  	$U/_memhog \
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
@@ -154,7 +158,7 @@ UPROGS=\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
-
+	dd if=/dev/zero bs=1024 count=16384 >> fs.img 2>/dev/null
 -include kernel/*.d user/*.d
 
 clean: 
