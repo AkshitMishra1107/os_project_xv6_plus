@@ -9,6 +9,7 @@
 int
 handle_page_fault(struct proc *p, uint64 va, int is_write)
 {
+  stat_faults++;
   if(va >= p->sz)
     return -1;
 
@@ -30,7 +31,7 @@ handle_page_fault(struct proc *p, uint64 va, int is_write)
       kfree(mem);
       return -1;
     }
-
+    stat_lazy++;
     return 0;
   }
 
@@ -57,6 +58,7 @@ handle_page_fault(struct proc *p, uint64 va, int is_write)
 
       // Release this process's reference to the old page.
       kfree((void*)pa);
+      stat_cow++;
     }
 
     sfence_vma();

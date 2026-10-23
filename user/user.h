@@ -1,4 +1,6 @@
 struct stat;
+struct memstat;
+
 
 // system calls
 int fork(void);
@@ -22,6 +24,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int memstat(struct memstat*);
 
 // ulib.c
 int stat(const char*, struct stat*);

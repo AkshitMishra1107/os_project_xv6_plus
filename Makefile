@@ -9,6 +9,7 @@ OBJS = \
   $K/uart.o \
   $K/kalloc.o \
   $K/pgfault.o \
+  $K/swap.o \
   $K/spinlock.o \
   $K/string.o \
   $K/main.o \
@@ -133,6 +134,7 @@ UPROGS=\
         $U/_lazytest\
         $U/_cowtest\
         $U/_forkbench\
+        $U/_memstat \
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
