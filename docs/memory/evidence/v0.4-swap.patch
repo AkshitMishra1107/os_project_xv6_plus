@@ -1,0 +1,1162 @@
+diff --git a/Makefile b/Makefile
+index 9cb3fbf..b13869a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -62,6 +62,9 @@ OBJCOPY = $(TOOLPREFIX)objcopy
+ OBJDUMP = $(TOOLPREFIX)objdump
+ 
+ CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
++RAM_MB ?= 128
++SWAP_POLICY ?= 1
++CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
+ CFLAGS += -MD
+ CFLAGS += -mcmodel=medany
+ CFLAGS += -march=rv64gc
+@@ -135,6 +138,9 @@ UPROGS=\
+         $U/_cowtest\
+         $U/_forkbench\
+         $U/_memstat \
++  	$U/_memhog \
++	$U/_swapfork\
++	$U/_hotcold\
+ 	$U/_cat\
+ 	$U/_echo\
+ 	$U/_forktest\
+@@ -154,7 +160,7 @@ UPROGS=\
+ 
+ fs.img: mkfs/mkfs README $(UPROGS)
+ 	mkfs/mkfs fs.img README $(UPROGS)
+-
++	dd if=/dev/zero bs=1024 count=16384 >> fs.img 2>/dev/null
+ -include kernel/*.d user/*.d
+ 
+ clean: 
+diff --git a/kernel/defs.h b/kernel/defs.h
+index e7d7c8c..a8290e2 100644
+--- a/kernel/defs.h
++++ b/kernel/defs.h
+@@ -121,6 +121,7 @@ void            initlock(struct spinlock*, char*);
+ void            release(struct spinlock*);
+ void            push_off(void);
+ void            pop_off(void);
++int             nlocks_held(void);
+ 
+ // sleeplock.c
+ void            acquiresleep(struct sleeplock*);
+@@ -171,6 +172,7 @@ uint64          uvmdealloc(pagetable_t, uint64, uint64);
+ int             uvmcopy(pagetable_t, pagetable_t, uint64);
+ void            uvmfree(pagetable_t, uint64);
+ void            uvmunmap(pagetable_t, uint64, uint64, int);
++void            prefault(uint64, uint64, int);
+ void            uvmclear(pagetable_t, uint64);
+ pte_t *         walk(pagetable_t, uint64, int);
+ uint64          walkaddr(pagetable_t, uint64);
+@@ -193,6 +195,15 @@ void            virtio_disk_intr(void);
+ #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+ int handle_page_fault(struct proc*, uint64, int);
+ // swap.c
++void            swap_init(void);
++void*           kalloc_user(void);
++void            swap_track(uint64, pagetable_t, uint64);
++void            swap_untrack(uint64);
++void            swap_untrack_owner(uint64, pagetable_t);
++int             swap_out_one(void);
++void            swap_in(pagetable_t, uint64, pte_t*, void*);
++void            swap_slot_free(int);
+ void            memstat_fill(struct memstat*);
+-extern uint64   stat_faults, stat_lazy, stat_cow;
+-extern uint64   stat_swapin, stat_swapout;
++
++extern uint64 stat_faults, stat_lazy, stat_cow;
++extern uint64 stat_swapin, stat_swapout;
+diff --git a/kernel/kalloc.c b/kernel/kalloc.c
+index 3fe2629..9c6bea5 100644
+--- a/kernel/kalloc.c
++++ b/kernel/kalloc.c
+@@ -72,6 +72,7 @@ kfree(void *pa)
+   release(&pgref.lock);
+ 
+   // Nobody owns this page now.
++swap_untrack((uint64)pa);
+   memset(pa, 1, PGSIZE);
+   r = (struct run*)pa;
+ 
+diff --git a/kernel/main.c b/kernel/main.c
+index f0d3171..de811e2 100644
+--- a/kernel/main.c
++++ b/kernel/main.c
+@@ -17,6 +17,7 @@ main()
+     printf("xv6 kernel is booting\n");
+     printf("\n");
+     kinit();         // physical page allocator
++    swap_init();
+     kvminit();       // create kernel page table
+     kvminithart();   // turn on paging
+     procinit();      // process table
+diff --git a/kernel/memlayout.h b/kernel/memlayout.h
+index 9bc9424..07c56d8 100644
+--- a/kernel/memlayout.h
++++ b/kernel/memlayout.h
+@@ -37,7 +37,11 @@
+ // for use by the kernel and user pages
+ // from physical address 0x80000000 to PHYSTOP.
+ #define KERNBASE 0x80000000L
+-#define PHYSTOP (KERNBASE + 128*1024*1024)
++#ifndef RAM_MB
++#define RAM_MB 128
++#endif
++
++#define PHYSTOP (KERNBASE + RAM_MB * 1024 * 1024)
+ 
+ // map the trampoline page to the highest address,
+ // in both user and kernel space.
+diff --git a/kernel/pgfault.c b/kernel/pgfault.c
+index 742ebdb..d2d6f20 100644
+--- a/kernel/pgfault.c
++++ b/kernel/pgfault.c
+@@ -9,62 +9,117 @@
+ int
+ handle_page_fault(struct proc *p, uint64 va, int is_write)
+ {
++  pagetable_t pt = p->pagetable;
++  char *mem = 0;
++
+   stat_faults++;
++
+   if(va >= p->sz)
+     return -1;
+ 
+   va = PGROUNDDOWN(va);
+ 
+-  pte_t *pte = walk(p->pagetable, va, 0);
++  for(;;){
++    push_off();
+ 
+-  // Case 1: first access to an untouched lazy page.
+-  if(pte == 0 || (*pte & PTE_V) == 0){
+-    char *mem = kalloc();
++    pte_t *pte = walk(pt, va, 0);
+ 
+-    if(mem == 0)
+-      return -1;
++    int lazy =
++      (pte == 0) || ((*pte & (PTE_V | PTE_SWAP)) == 0);
+ 
+-    memset(mem, 0, PGSIZE);
++    int swapped =
++      (pte != 0) && (*pte & PTE_SWAP);
+ 
+-    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem,
+-                PTE_R | PTE_W | PTE_U) != 0){
+-      kfree(mem);
+-      return -1;
+-    }
+-    stat_lazy++;
+-    return 0;
+-  }
++    int cow =
++      (pte != 0) && (*pte & PTE_V) &&
++      is_write && (*pte & PTE_COW);
++
++    int copy =
++      cow && kref_get((void *)PTE2PA(*pte)) > 1;
+ 
+-  // Case 2: write to a copy-on-write page.
+-  if(is_write && (*pte & PTE_COW)){
+-    uint64 pa = PTE2PA(*pte);
++    if((lazy || swapped || copy) && mem == 0){
++      // Allocation may sleep while another page is swapped out.
++      pop_off();
++
++      if(swapped && nlocks_held() > 0)
++        return -1;
+ 
+-    if(kref_get((void*)pa) == 1){
+-      // Already private: restore write permission.
+-      *pte = (*pte & ~PTE_COW) | PTE_W;
+-    } else {
+-      char *mem = kalloc();
++      mem = kalloc_user();
+ 
+       if(mem == 0)
+         return -1;
+ 
+-      memmove(mem, (char*)pa, PGSIZE);
++      // Allocation may have slept: inspect the entry again.
++      continue;
++    }
++
++    // Case 1: restore a page from disk.
++    if(swapped){
++      pop_off();
++      swap_in(pt, va, pte, mem);
++      return 0;
++    }
++
++    // Case 2: first access to an untouched lazy page.
++    if(lazy){
++      memset(mem, 0, PGSIZE);
++
++      if(mappages(pt, va, PGSIZE, (uint64)mem,
++                  PTE_R | PTE_W | PTE_U) != 0){
++        pop_off();
++        kfree(mem);
++        return -1;
++      }
++
++      swap_track((uint64)mem, pt, va);
++      stat_lazy++;
++
++      pop_off();
++      return 0;
++    }
++
++    // Case 3: write to a copy-on-write page.
++    if(cow){
++      uint64 pa = PTE2PA(*pte);
++
++      if(kref_get((void *)pa) == 1){
++        // The page already has only one owner.
++        *pte = (*pte & ~PTE_COW) | PTE_W;
++
++        swap_track(pa, pt, va);
++        sfence_vma();
++
++        pop_off();
++
++        if(mem)
++          kfree(mem);
++
++        return 0;
++      }
++
++      memmove(mem, (char *)pa, PGSIZE);
+ 
+       uint64 flags =
+         (*pte & (PTE_R | PTE_X | PTE_U)) | PTE_W | PTE_V;
+ 
+-      // Replace this process's mapping with its private copy.
+       *pte = PA2PTE(mem) | flags;
+ 
+-      // Release this process's reference to the old page.
+-      kfree((void*)pa);
++      sfence_vma();
++      swap_track((uint64)mem, pt, va);
++
++      kfree((void *)pa);
+       stat_cow++;
++
++      pop_off();
++      return 0;
+     }
+ 
+-    sfence_vma();
+-    return 0;
+-  }
++    // Invalid access or a genuinely read-only mapping.
++    pop_off();
+ 
+-  // Invalid access or a write to a genuinely read-only page.
+-  return -1;
++    if(mem)
++      kfree(mem);
++
++    return -1;
++  }
+ }
+diff --git a/kernel/pipe.c b/kernel/pipe.c
+index f6b501a..2581cf1 100644
+--- a/kernel/pipe.c
++++ b/kernel/pipe.c
+@@ -78,26 +78,60 @@ pipewrite(struct pipe *pi, uint64 addr, int n)
+ {
+   int i = 0;
+   struct proc *pr = myproc();
++  char buf[PIPESIZE];
+ 
+-  acquire(&pi->lock);
+   while(i < n){
++    acquire(&pi->lock);
++
+     if(pi->readopen == 0 || killed(pr)){
+       release(&pi->lock);
+       return -1;
+     }
+-    if(pi->nwrite == pi->nread + PIPESIZE){ //DOC: pipewrite-full
+-      wakeup(&pi->nread);
+-      sleep(&pi->nwrite, &pi->lock);
+-    } else {
+-      char ch;
+-      if(copyin(pr->pagetable, &ch, addr + i, 1) == -1)
++
++    release(&pi->lock);
++
++    // Stage user data without holding the pipe lock.
++    int want = n - i;
++    if(want > PIPESIZE)
++      want = PIPESIZE;
++
++    int got = 0;
++
++    while(got < want){
++      if(copyin(pr->pagetable, &buf[got],
++                addr + i + got, 1) < 0)
+         break;
+-      pi->data[pi->nwrite++ % PIPESIZE] = ch;
+-      i++;
++      got++;
++    }
++
++    if(got == 0)
++      return i;
++
++    acquire(&pi->lock);
++
++    int j = 0;
++
++    while(j < got){
++      if(pi->readopen == 0 || killed(pr)){
++        release(&pi->lock);
++        return -1;
++      }
++
++      if(pi->nwrite == pi->nread + PIPESIZE){
++        wakeup(&pi->nread);
++        sleep(&pi->nwrite, &pi->lock);
++      } else {
++        pi->data[pi->nwrite++ % PIPESIZE] = buf[j++];
++        i++;
++      }
+     }
++
++    wakeup(&pi->nread);
++    release(&pi->lock);
++
++    if(got < want)
++      break;
+   }
+-  wakeup(&pi->nread);
+-  release(&pi->lock);
+ 
+   return i;
+ }
+@@ -105,26 +139,37 @@ pipewrite(struct pipe *pi, uint64 addr, int n)
+ int
+ piperead(struct pipe *pi, uint64 addr, int n)
+ {
+-  int i;
++  int i = 0;
+   struct proc *pr = myproc();
+-  char ch;
+ 
+   acquire(&pi->lock);
+-  while(pi->nread == pi->nwrite && pi->writeopen){  //DOC: pipe-empty
++
++  while(pi->nread == pi->nwrite && pi->writeopen){
+     if(killed(pr)){
+       release(&pi->lock);
+       return -1;
+     }
+-    sleep(&pi->nread, &pi->lock); //DOC: piperead-sleep
++
++    sleep(&pi->nread, &pi->lock);
+   }
+-  for(i = 0; i < n; i++){  //DOC: piperead-copy
+-    if(pi->nread == pi->nwrite)
+-      break;
+-    ch = pi->data[pi->nread++ % PIPESIZE];
+-    if(copyout(pr->pagetable, addr + i, &ch, 1) == -1)
+-      break;
++
++  while(i < n && pi->nread != pi->nwrite){
++    // Stage one byte before releasing the pipe lock.
++    char ch = pi->data[pi->nread++ % PIPESIZE];
++
++    wakeup(&pi->nwrite);
++    release(&pi->lock);
++
++    // This user copy may now allocate or swap in a page.
++    if(copyout(pr->pagetable, addr + i, &ch, 1) < 0)
++      return i;
++
++    i++;
++    acquire(&pi->lock);
+   }
+-  wakeup(&pi->nwrite);  //DOC: piperead-wakeup
++
++  wakeup(&pi->nwrite);
+   release(&pi->lock);
++
+   return i;
+ }
+diff --git a/kernel/riscv.h b/kernel/riscv.h
+index 92387fb..e9b8594 100644
+--- a/kernel/riscv.h
++++ b/kernel/riscv.h
+@@ -380,3 +380,9 @@ typedef uint64 *pagetable_t; // 512 PTEs
+ // Sv39, to avoid having to sign-extend virtual addresses
+ // that have the high bit set.
+ #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
++#ifndef PTE_A
++#define PTE_A (1L << 6)
++#endif
++
++#define PTE2SLOT(pte) ((uint64)(pte) >> 10)
++#define SLOT2PTE(s)   ((uint64)(s) << 10)
+diff --git a/kernel/spinlock.c b/kernel/spinlock.c
+index 6951960..f67e805 100644
+--- a/kernel/spinlock.c
++++ b/kernel/spinlock.c
+@@ -109,3 +109,11 @@ pop_off(void)
+   if(c->noff == 0 && c->intena)
+     intr_on();
+ }
++int
++nlocks_held(void)
++{
++  push_off();
++  int n = mycpu()->noff - 1;
++  pop_off();
++  return n;
++}
+diff --git a/kernel/swap.c b/kernel/swap.c
+index ea3bfa3..98c8738 100644
+--- a/kernel/swap.c
++++ b/kernel/swap.c
+@@ -3,12 +3,89 @@
+ #include "memlayout.h"
+ #include "riscv.h"
+ #include "spinlock.h"
++#include "sleeplock.h"
+ #include "proc.h"
+ #include "defs.h"
++#include "fs.h"
++#include "buf.h"
+ #include "memstat.h"
+ 
+-uint64 stat_faults, stat_lazy, stat_cow;
+-uint64 stat_swapin, stat_swapout;
++#define POLICY_FIFO 1
++#define POLICY_CLOCK 2
++
++#ifndef SWAP_POLICY
++#define SWAP_POLICY POLICY_FIFO
++#endif
++
++#define SWAPSTART FSSIZE
++#define SWAPBLOCKS 16384
++#define BLOCKS_PER_PAGE (PGSIZE / BSIZE)
++#define NSWAPSLOTS (SWAPBLOCKS / BLOCKS_PER_PAGE)
++
++#define NFRAMES ((PHYSTOP - KERNBASE) / PGSIZE)
++#define FRAMEIDX(pa) (((uint64)(pa) - KERNBASE) / PGSIZE)
++#define FRAMEPA(i) (KERNBASE + (uint64)(i) * PGSIZE)
++
++#define SWAP_LOW_WATER 64
++
++extern struct proc proc[NPROC];
++
++struct frame {
++  pagetable_t pt;
++  uint64 va;
++  uint64 seq;
++};
++
++static struct frame frames[NFRAMES];
++static uint64 next_seq = 1;
++
++#if SWAP_POLICY == POLICY_CLOCK
++static int clock_hand;
++#endif
++
++static uint8 slot_used[NSWAPSLOTS];
++static struct sleeplock swap_lock;
++
++uint64 stat_faults;
++uint64 stat_lazy;
++uint64 stat_cow;
++uint64 stat_swapin;
++uint64 stat_swapout;
++
++void
++swap_init(void)
++{
++  initsleeplock(&swap_lock, "swap");
++}
++
++static int
++slot_alloc(void)
++{
++  for(int i = 0; i < NSWAPSLOTS; i++){
++    if(slot_used[i] == 0){
++      slot_used[i] = 1;
++      return i;
++    }
++  }
++  return -1;
++}
++
++void
++swap_slot_free(int slot)
++{
++  slot_used[slot] = 0;
++}
++
++static int
++swap_slots_used(void)
++{
++  int n = 0;
++
++  for(int i = 0; i < NSWAPSLOTS; i++)
++    n += slot_used[i];
++
++  return n;
++}
+ 
+ void
+ memstat_fill(struct memstat *ms)
+@@ -19,5 +96,215 @@ memstat_fill(struct memstat *ms)
+   ms->swap_outs = stat_swapout;
+   ms->swap_ins = stat_swapin;
+   ms->free_pages = kfreepages();
+-  ms->swap_slots_used = 0;
++  ms->swap_slots_used = swap_slots_used();
++}
++
++static void
++swap_write(int slot, uint64 pa)
++{
++  for(int k = 0; k < BLOCKS_PER_PAGE; k++){
++    struct buf *b =
++      bread(ROOTDEV, SWAPSTART + slot * BLOCKS_PER_PAGE + k);
++
++    memmove(b->data, (char *)pa + k * BSIZE, BSIZE);
++    bwrite(b);
++    brelse(b);
++  }
++}
++
++static void
++swap_read(int slot, uint64 pa)
++{
++  for(int k = 0; k < BLOCKS_PER_PAGE; k++){
++    struct buf *b =
++      bread(ROOTDEV, SWAPSTART + slot * BLOCKS_PER_PAGE + k);
++
++    memmove((char *)pa + k * BSIZE, b->data, BSIZE);
++    brelse(b);
++  }
++}
++
++void
++swap_track(uint64 pa, pagetable_t pt, uint64 va)
++{
++  push_off();
++
++  struct frame *f = &frames[FRAMEIDX(pa)];
++  f->pt = pt;
++  f->va = va;
++  f->seq = next_seq++;
++
++  pop_off();
++}
++
++void
++swap_untrack(uint64 pa)
++{
++  push_off();
++  frames[FRAMEIDX(pa)].pt = 0;
++  pop_off();
++}
++
++void
++swap_untrack_owner(uint64 pa, pagetable_t pt)
++{
++  push_off();
++
++  struct frame *f = &frames[FRAMEIDX(pa)];
++  if(f->pt == pt)
++    f->pt = 0;
++
++  pop_off();
++}
++
++static int
++pt_is_live(pagetable_t pt)
++{
++  for(struct proc *p = proc; p < &proc[NPROC]; p++){
++    if(p->state != UNUSED && p->pagetable == pt)
++      return 1;
++  }
++
++  return 0;
++}
++
++static int
++evictable(int i)
++{
++  struct frame *f = &frames[i];
++
++  if(f->pt == 0 || !pt_is_live(f->pt))
++    return 0;
++
++  pte_t *pte = walk(f->pt, f->va, 0);
++
++  if(pte == 0)
++    return 0;
++
++  if((*pte & (PTE_V | PTE_U)) != (PTE_V | PTE_U))
++    return 0;
++
++  if(*pte & PTE_COW)
++    return 0;
++
++  if(PTE2PA(*pte) != FRAMEPA(i))
++    return 0;
++
++  if(kref_get((void *)FRAMEPA(i)) != 1)
++    return 0;
++
++  return 1;
++}
++
++static int
++pick_victim(void)
++{
++#if SWAP_POLICY == POLICY_FIFO
++  int best = -1;
++  uint64 best_seq = ~(uint64)0;
++
++  for(int i = 0; i < NFRAMES; i++){
++    if(frames[i].pt != 0 &&
++       frames[i].seq < best_seq &&
++       evictable(i)){
++      best = i;
++      best_seq = frames[i].seq;
++    }
++  }
++
++  return best;
++#else
++  for(int n = 0; n < 2 * NFRAMES; n++){
++    int i = clock_hand;
++    clock_hand = (clock_hand + 1) % NFRAMES;
++
++    if(!evictable(i))
++      continue;
++
++    pte_t *pte = walk(frames[i].pt, frames[i].va, 0);
++
++    if(*pte & PTE_A){
++      *pte &= ~PTE_A;
++      sfence_vma();
++      continue;
++    }
++
++    return i;
++  }
++
++  return -1;
++#endif
++}
++
++int
++swap_out_one(void)
++{
++  int ret = -1;
++
++  acquiresleep(&swap_lock);
++  push_off();
++
++  int i = pick_victim();
++  int slot = -1;
++  uint64 pa = 0;
++
++  if(i >= 0){
++    slot = slot_alloc();
++
++    if(slot >= 0){
++      pa = FRAMEPA(i);
++
++      pte_t *pte = walk(frames[i].pt, frames[i].va, 0);
++      uint64 perm = *pte & (PTE_R | PTE_W | PTE_X | PTE_U);
++
++      *pte = SLOT2PTE(slot) | PTE_SWAP | perm;
++      sfence_vma();
++
++      frames[i].pt = 0;
++    }
++  }
++
++  pop_off();
++
++  if(i >= 0 && slot >= 0){
++    swap_write(slot, pa);
++    kfree((void *)pa);
++    stat_swapout++;
++    ret = 0;
++  }
++
++  releasesleep(&swap_lock);
++  return ret;
++}
++
++void *
++kalloc_user(void)
++{
++  if(kfreepages() < SWAP_LOW_WATER && nlocks_held() == 0){
++    while(kfreepages() < SWAP_LOW_WATER + 16){
++      if(swap_out_one() < 0)
++        break;
++    }
++  }
++
++  return kalloc();
++}
++
++void
++swap_in(pagetable_t pt, uint64 va, pte_t *pte, void *mem)
++{
++  int slot = PTE2SLOT(*pte);
++  uint64 perm = *pte & (PTE_R | PTE_W | PTE_X | PTE_U);
++
++  acquiresleep(&swap_lock);
++
++  swap_read(slot, (uint64)mem);
++  *pte = PA2PTE(mem) | perm | PTE_V;
++  swap_slot_free(slot);
++
++  releasesleep(&swap_lock);
++
++  sfence_vma();
++  swap_track((uint64)mem, pt, va);
++  stat_swapin++;
+ }
+diff --git a/kernel/sysfile.c b/kernel/sysfile.c
+index 16b668c..2070383 100644
+--- a/kernel/sysfile.c
++++ b/kernel/sysfile.c
+@@ -76,7 +76,10 @@ sys_read(void)
+   argint(2, &n);
+   if(argfd(0, 0, &f) < 0)
+     return -1;
+-  return fileread(f, p, n);
++  if(n > 0)
++    prefault(p, n, 1);
++
++return fileread(f, p, n);
+ }
+ 
+ uint64
+@@ -90,7 +93,8 @@ sys_write(void)
+   argint(2, &n);
+   if(argfd(0, 0, &f) < 0)
+     return -1;
+-
++  if(n > 0)
++    prefault(p, n, 0);
+   return filewrite(f, p, n);
+ }
+ 
+diff --git a/kernel/trap.c b/kernel/trap.c
+index 19a962e..59e29dd 100644
+--- a/kernel/trap.c
++++ b/kernel/trap.c
+@@ -65,7 +65,7 @@ usertrap(void)
+     intr_on();
+ 
+     syscall();
+-  } else if((which_dev = devintr()) != 0){} else if(r_scause() == 13 || r_scause() == 15){
++  } else if((which_dev = devintr()) != 0){} else if(r_scause()==12 || r_scause() == 13 || r_scause() == 15){
+   // Load or store page fault.
+   if(handle_page_fault(p, r_stval(), r_scause() == 15) < 0)
+     setkilled(p);
+diff --git a/kernel/vm.c b/kernel/vm.c
+index c7003b9..0a74844 100644
+--- a/kernel/vm.c
++++ b/kernel/vm.c
+@@ -37,6 +37,28 @@ pin_user_page(pagetable_t pagetable, uint64 va, int write)
+ 
+   return 0;
+ }
++
++// Prepare user-buffer pages before read/write copies.
++void
++prefault(uint64 va, uint64 n, int write)
++{
++  struct proc *p = myproc();
++
++  if(n == 0 || va >= p->sz)
++    return;
++
++  uint64 end = va + n;
++
++  if(end < va || end > p->sz)
++    end = p->sz;
++
++  for(uint64 a = PGROUNDDOWN(va); a < end; a += PGSIZE){
++    if(pin_user_page(p->pagetable, a, write) == 0)
++      break;
++
++    pop_off();
++  }
++}
+ /*
+  * the kernel's page table.
+  */
+@@ -206,7 +228,8 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
+ // page-aligned. The mappings must exist.
+ // Optionally free the physical memory.
+ void
+-uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
++uvmunmap(pagetable_t pagetable, uint64 va,
++         uint64 npages, int do_free)
+ {
+   uint64 a;
+   pte_t *pte;
+@@ -214,18 +237,38 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
+   if((va % PGSIZE) != 0)
+     panic("uvmunmap: not aligned");
+ 
+-  for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
+-    if((pte = walk(pagetable, a, 0)) == 0)
+-  continue;
+-    if((*pte & PTE_V) == 0)
+-  continue;
++  for(a = va; a < va + npages * PGSIZE; a += PGSIZE){
++    push_off();
++
++    pte = walk(pagetable, a, 0);
++
++    if(pte == 0){
++      pop_off();
++      continue;
++    }
++
++    if((*pte & PTE_V) == 0){
++      if(*pte & PTE_SWAP){
++        swap_slot_free(PTE2SLOT(*pte));
++        *pte = 0;
++      }
++
++      pop_off();
++      continue;
++    }
++
+     if(PTE_FLAGS(*pte) == PTE_V)
+       panic("uvmunmap: not a leaf");
++
+     if(do_free){
+       uint64 pa = PTE2PA(*pte);
+-      kfree((void*)pa);
++
++      swap_untrack_owner(pa, pagetable);
++      kfree((void *)pa);
+     }
++
+     *pte = 0;
++    pop_off();
+   }
+ }
+ 
+@@ -271,7 +314,7 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)
+ 
+   oldsz = PGROUNDUP(oldsz);
+   for(a = oldsz; a < newsz; a += PGSIZE){
+-    mem = kalloc();
++    mem = kalloc_user();
+     if(mem == 0){
+       uvmdealloc(pagetable, a, oldsz);
+       return 0;
+@@ -282,6 +325,7 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)
+       uvmdealloc(pagetable, a, oldsz);
+       return 0;
+     }
++    swap_track((uint64)mem, pagetable, a);
+   }
+   return newsz;
+ }
+@@ -348,26 +392,44 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
+   uint flags;
+ 
+   for(i = 0; i < sz; i += PGSIZE){
+-    if((pte = walk(old, i, 0)) == 0)
+-      continue;
++    for(;;){
++      push_off();
++
++      pte = walk(old, i, 0);
++
++      if(pte && (*pte & PTE_SWAP)){
++        pop_off();
+ 
+-    if((*pte & PTE_V) == 0)
++        // Restore the parent's page before sharing it.
++        if(handle_page_fault(myproc(), i, 0) < 0)
++          goto err;
++
++        // Swap-in may have slept: inspect again.
++        continue;
++      }
++
++      break;
++    }
++
++    if(pte == 0 || (*pte & PTE_V) == 0){
++      pop_off();
+       continue;
++    }
+ 
+     pa = PTE2PA(*pte);
+ 
+-    if(*pte & PTE_W){
+-      // Writable pages become COW in both processes.
++    if(*pte & PTE_W)
+       *pte = (*pte & ~PTE_W) | PTE_COW;
+-    }
+ 
+     flags = PTE_FLAGS(*pte);
+ 
+-    // Map the same physical page into the child.
+-    if(mappages(new, i, PGSIZE, pa, flags) != 0)
++    if(mappages(new, i, PGSIZE, pa, flags) != 0){
++      pop_off();
+       goto err;
++    }
+ 
+-    kref_inc((void*)pa);
++    kref_inc((void *)pa);
++    pop_off();
+   }
+ 
+   sfence_vma();
+diff --git a/user/hotcold.c b/user/hotcold.c
+new file mode 100644
+index 0000000..2e07d4c
+--- /dev/null
++++ b/user/hotcold.c
+@@ -0,0 +1,57 @@
++#include "kernel/types.h"
++#include "user/user.h"
++#include "kernel/memstat.h"
++
++#define PAGE 4096
++
++int
++main(void)
++{
++  int mb = 12;
++  int hot = 512;
++  int npages = mb * 256;
++
++  volatile char *base = sbrk(mb * 1024 * 1024);
++
++  if(base == (char *)-1){
++    printf("hotcold: sbrk failed\n");
++    exit(1);
++  }
++
++  printf("hotcold: 12 MB, 3 rounds\n");
++
++  // Initialize every page.
++  for(int i = 0; i < npages; i++)
++    base[i * PAGE] = 1;
++
++  struct memstat before, after;
++
++  if(memstat(&before) < 0){
++    printf("hotcold: initial memstat failed\n");
++    exit(1);
++  }
++
++  for(int round = 0; round < 3; round++){
++    for(int i = hot; i < npages; i++){
++      // Stream through cold pages.
++      base[i * PAGE] += 1;
++
++      // Revisit selected pages in the hot region.
++      if(i % 20 == 0){
++        for(int h = 0; h < hot; h += 8)
++          base[h * PAGE] += 1;
++      }
++    }
++  }
++
++  if(memstat(&after) < 0){
++    printf("hotcold: final memstat failed\n");
++    exit(1);
++  }
++
++  printf("hotcold: swap ins %d, swap outs %d\n",
++         (int)(after.swap_ins - before.swap_ins),
++         (int)(after.swap_outs - before.swap_outs));
++
++  exit(0);
++}
+diff --git a/user/memhog.c b/user/memhog.c
+new file mode 100644
+index 0000000..4de8527
+--- /dev/null
++++ b/user/memhog.c
+@@ -0,0 +1,80 @@
++#include "kernel/types.h"
++#include "user/user.h"
++#include "kernel/memstat.h"
++
++#define PAGE 4096
++
++static void
++run_workload(int mb)
++{
++  int npages = mb * 256;
++  char *base = sbrk(mb * 1024 * 1024);
++
++  if(base == (char*)-1){
++    printf("memhog: sbrk failed\n");
++    exit(1);
++  }
++
++  for(int i = 0; i < npages; i++){
++    base[i * PAGE] = i % 251;
++    base[i * PAGE + PAGE - 1] = i % 241;
++  }
++
++  int bad = 0;
++
++  for(int i = 0; i < npages; i++){
++    if(base[i * PAGE] != (char)(i % 251) ||
++       base[i * PAGE + PAGE - 1] != (char)(i % 241))
++      bad++;
++  }
++
++  struct memstat ms;
++
++  if(memstat(&ms) < 0){
++    printf("memhog: memstat failed\n");
++    exit(1);
++  }
++
++  printf("memhog: %d MB, %d pages, %d bad, "
++         "swap outs %d, swap ins %d\n",
++         mb, npages, bad,
++         (int)ms.swap_outs, (int)ms.swap_ins);
++
++  exit(bad ? 1 : 0);
++}
++
++int
++main(int argc, char *argv[])
++{
++  int mb = 12;
++
++  if(argc > 1)
++    mb = atoi(argv[1]);
++
++  if(mb < 1){
++    printf("usage: memhog [positive MB]\n");
++    exit(1);
++  }
++
++  printf("memhog: starting %d MB workload\n", mb);
++
++  int pid = fork();
++
++  if(pid < 0){
++    printf("memhog: fork failed\n");
++    exit(1);
++  }
++
++  if(pid == 0)
++    run_workload(mb);
++
++  int status = -2;
++
++  if(wait(&status) < 0){
++    printf("memhog: wait failed\n");
++    exit(1);
++  }
++
++  printf("memhog: child exit status %d\n", status);
++  exit(status == 0 ? 0 : 1);
++}
+diff --git a/user/swapfork.c b/user/swapfork.c
+new file mode 100644
+index 0000000..1e0bbdf
+--- /dev/null
++++ b/user/swapfork.c
+@@ -0,0 +1,75 @@
++#include "kernel/types.h"
++#include "user/user.h"
++
++#define PAGE 4096
++
++int
++main(void)
++{
++  int mb = 6;
++  int npages = mb * 256;
++
++  char *base = sbrk(mb * 1024 * 1024);
++
++  if(base == (char *)-1){
++    printf("swapfork: sbrk failed\n");
++    exit(1);
++  }
++
++  // Fill the parent's pages before sharing them.
++  for(int i = 0; i < npages; i++)
++    base[i * PAGE] = (char)(i % 251);
++
++  int pid = fork();
++
++  if(pid < 0){
++    printf("swapfork: fork failed\n");
++    exit(1);
++  }
++
++  if(pid == 0){
++    int bad = 0;
++
++    // Check the inherited data.
++    for(int i = 0; i < npages; i++){
++      if(base[i * PAGE] != (char)(i % 251))
++        bad++;
++    }
++
++    // Private writes force COW copies under memory pressure.
++    for(int i = 0; i < npages; i++)
++      base[i * PAGE + 1] = 77;
++
++    // Check both original data and private changes.
++    for(int i = 0; i < npages; i++){
++      if(base[i * PAGE] != (char)(i % 251) ||
++         base[i * PAGE + 1] != 77)
++        bad++;
++    }
++
++    printf("swapfork: child bad=%d\n", bad);
++    exit(bad ? 1 : 0);
++  }
++
++  int status = -2;
++
++  if(wait(&status) < 0){
++    printf("swapfork: wait failed\n");
++    exit(1);
++  }
++
++  int bad = (status != 0);
++
++  if(status != 0)
++    printf("swapfork: child exit status %d\n", status);
++
++  // The parent's data must remain unchanged.
++  for(int i = 0; i < npages; i++){
++    if(base[i * PAGE] != (char)(i % 251) ||
++       base[i * PAGE + 1] != 0)
++      bad++;
++  }
++
++  printf("swapfork: %s\n", bad ? "FAIL" : "OK");
++  exit(bad ? 1 : 0);
++}

@@ -1,0 +1,397 @@
+[
+  {
+    "path": "docs/memory/evidence/01-baseline-boot.png",
+    "bytes": 61330,
+    "sha256": "8fa8a9a82ec36d060f4423e877206df3785a570f6f8b1950a845f5165e6f8559"
+  },
+  {
+    "path": "docs/memory/evidence/02-baseline-usertests.png",
+    "bytes": 38456,
+    "sha256": "8ade450a55a1de80cdff466f99510a66ee88b7b12a167992d523105448047b42"
+  },
+  {
+    "path": "docs/memory/evidence/03-eager-baseline-build.txt",
+    "bytes": 32180,
+    "sha256": "efecdcbea2e57a57bad192dd5776bbda8d58af8175a695391dfcf9ee66ad970a"
+  },
+  {
+    "path": "docs/memory/evidence/03-eager-baseline-result.txt",
+    "bytes": 344,
+    "sha256": "74a19a0434875d8dd50db466046cf439b29b75ef48d0504d7ff85f2be27f2a97"
+  },
+  {
+    "path": "docs/memory/evidence/04-boot-registers-before-fix.txt",
+    "bytes": 2875,
+    "sha256": "1fdf845e8f7b337d96905cd56645b61d10167f14e9108076bcc1a97391bb0057"
+  },
+  {
+    "path": "docs/memory/evidence/04-kernel-isa-before-fix.txt",
+    "bytes": 613,
+    "sha256": "1c872134918300f8fe4ac3f74ae28d6c88b4d27f9cd76f6711f4a464ea94a0b4"
+  },
+  {
+    "path": "docs/memory/evidence/05-boot-after-isa-fix.png",
+    "bytes": 116034,
+    "sha256": "0f894f3f01130e91e7529aff7e1aadfc2a812db587b8877671250a5ae71fc49d"
+  },
+  {
+    "path": "docs/memory/evidence/06-prelazy-usertests.png",
+    "bytes": 72186,
+    "sha256": "193d0bc8011a6de8241d876119076490bc42d9c92bf34a1af7f6ef32ba15ec86"
+  },
+  {
+    "path": "docs/memory/evidence/07-lazy-allocation-results.png",
+    "bytes": 80312,
+    "sha256": "ea9456c7089609c88459d2bfe70c0547aa5a9dc5a90f752f96235e47ca5ac955"
+  },
+  {
+    "path": "docs/memory/evidence/08-v0.1-usertests.png",
+    "bytes": 68022,
+    "sha256": "b0aac65fdda2382c27d5f0efcb067cd6f6a9829a97f3e3ced9ef52f5e906f274"
+  },
+  {
+    "path": "docs/memory/evidence/09-before-cow.png",
+    "bytes": 54883,
+    "sha256": "377ea315e88ce151e07d507ca06ae8104fe812b02f7284d2894bb3c80df57555"
+  },
+  {
+    "path": "docs/memory/evidence/10-git-checkpoints-before-cow.png",
+    "bytes": 98536,
+    "sha256": "39e813a31637d4de57cf759c596239571a520e73af000cc77d62de03129def5e"
+  },
+  {
+    "path": "docs/memory/evidence/11-cow-results-forkbench-exec-failure.png",
+    "bytes": 20337,
+    "sha256": "095b201bed0bf7925ed636023790595886aa12389cdbdf7119bcf26935edd73d"
+  },
+  {
+    "path": "docs/memory/evidence/12-forkbench-file-present.png",
+    "bytes": 22695,
+    "sha256": "04242e5af6d4a951cbc86ffbf3fb7b3a215bca84c0f3082634d78975f6de3507"
+  },
+  {
+    "path": "docs/memory/evidence/13-cow-forkbench-fresh-boot.png",
+    "bytes": 41857,
+    "sha256": "acbf98410ae9ec40542df6ba1a2a581ffad54c575d22811bc9037631a25fa9fb"
+  },
+  {
+    "path": "docs/memory/evidence/14-cow-repeat-targeted-results.png",
+    "bytes": 48933,
+    "sha256": "e4edca9cfc69bfcb837fa8df6330d491c76ac356995cb3a0d2cf9a4fa6998b53"
+  },
+  {
+    "path": "docs/memory/evidence/15-v0.2-usertests-sbrkfail.txt",
+    "bytes": 1325,
+    "sha256": "44034500842e6f7e9758ff49ea0da4174a02cea4c0227f4b7371c22f99e23fec"
+  },
+  {
+    "path": "docs/memory/evidence/16-sbrkfail-and-pgfault-source.txt",
+    "bytes": 3112,
+    "sha256": "c4dcb4b2d3c473ff28a6c423fada9ac5d338e47f7628d01c1520e4f3ce518a30"
+  },
+  {
+    "path": "docs/memory/evidence/17-cow-sbrkfail-fix-targeted-pass.png",
+    "bytes": 40179,
+    "sha256": "f3f2164f9a488cc4ce00dfc4a54562870fdb627dca0d860037b2a8e3b28dea02"
+  },
+  {
+    "path": "docs/memory/evidence/18-v0.2-full-usertests-pass.png",
+    "bytes": 34976,
+    "sha256": "c86b2deb0901c7c96186210971f349917facf9dd5ced5b495a0a0d4417c9704d"
+  },
+  {
+    "path": "docs/memory/evidence/19-v0.2-checkpoint-v0.3-branch.png",
+    "bytes": 154930,
+    "sha256": "6336d6c0c395296addc35f1e19de200f42c344c313ca64816e41fdd303d31778"
+  },
+  {
+    "path": "docs/memory/evidence/20-v0.3-memstat-results.png",
+    "bytes": 66917,
+    "sha256": "72ace946b85f0abb480de2fa3b768b05a45a45c7acc06bab0cd396b7a8c7d609"
+  },
+  {
+    "path": "docs/memory/evidence/21-v0.3-full-suite-and-memstat.png",
+    "bytes": 40939,
+    "sha256": "76a54a3fea3f6541e27f1e632f900517741af59735b570702a7a016ff72d2ffb"
+  },
+  {
+    "path": "docs/memory/evidence/22-v0.3-checkpoint-v0.4-branch.png",
+    "bytes": 169005,
+    "sha256": "c469c4339036dc629a960746484dd2f04905c24ab6911ad5b9cceaff51c3582c"
+  },
+  {
+    "path": "docs/memory/evidence/23-8mb-memstat-entry-and-retries.png",
+    "bytes": 60919,
+    "sha256": "e72a29ffc1a01385453637c45b71cbad7ea31b8ca80009b6a053b2987e9d11c6"
+  },
+  {
+    "path": "docs/memory/evidence/24-swap-disk-reservation-size.png",
+    "bytes": 21855,
+    "sha256": "657cc177a57918e7d81bcab6be10122ce12ef807ca5f62a2d3a4c9fb9cc0988b"
+  },
+  {
+    "path": "docs/memory/evidence/25-no-swap-pressure-baseline.png",
+    "bytes": 73155,
+    "sha256": "3d9099438002410b0f37ebb6f3d74cd8c6426945311021281ce95f382be8953c"
+  },
+  {
+    "path": "docs/memory/evidence/26-swap-declarations-editor.png",
+    "bytes": 71412,
+    "sha256": "37722aed34640146c92faf8b7804b71596f04d063b74efdd3d04db17900b8b89"
+  },
+  {
+    "path": "docs/memory/evidence/27-kfree-before-untrack-hook.png",
+    "bytes": 76217,
+    "sha256": "65dfbf245788451e703981bad95cf9714f335c8706a7003b4ac2c14516386db2"
+  },
+  {
+    "path": "docs/memory/evidence/28-fifo-swap-memhog-results.png",
+    "bytes": 83641,
+    "sha256": "6d3196727bab923ca3b332a1eb43c449b168431514602af9d29aec17d11d745b"
+  },
+  {
+    "path": "docs/memory/evidence/29-fifo-repeat-pressure-results.png",
+    "bytes": 103309,
+    "sha256": "ce0a08b4c9b40e6f3b048902c4bfd7a792e9279f59063a04828f10a760dddcc7"
+  },
+  {
+    "path": "docs/memory/evidence/30-fifo-swapfork-results.png",
+    "bytes": 47348,
+    "sha256": "d7ef1cc36ed7751c15c264865de9edb9808510ddafeb4f620ce506a4e32fa9d0"
+  },
+  {
+    "path": "docs/memory/evidence/31-fifo-hotcold-results.png",
+    "bytes": 46749,
+    "sha256": "0f795be882da69e0c1f9f06e6c4a60f2925c696192871c8c400228a2b515da69"
+  },
+  {
+    "path": "docs/memory/evidence/32-clock-hotcold-results-and-command-retry.png",
+    "bytes": 77749,
+    "sha256": "676d9650bc3d6409f313d545f52b4c9bd9fb38c9646d23742718c61c4ebde0dc"
+  },
+  {
+    "path": "docs/memory/evidence/33-clock-correctness-results.png",
+    "bytes": 78773,
+    "sha256": "443b020961ad3d52c3bf41de7d97480ed344eb4d9b2b4b81f125882c310b4adf"
+  },
+  {
+    "path": "docs/memory/evidence/34-v0.4-usertests-countfree-failure.png",
+    "bytes": 63296,
+    "sha256": "422b2eb43b5900bf3c3ea3471276c15f11ed46fea713c433317857f21bd2cd5b"
+  },
+  {
+    "path": "docs/memory/evidence/35-countfree-driver-pipewrite-source.txt",
+    "bytes": 5241,
+    "sha256": "a1a1bdc2ac18f1725d301f81be1c1c3f0bd6fc72b40c401c4214f07c409e5bb4"
+  },
+  {
+    "path": "docs/memory/evidence/36-pipe-staging-focused-test-pass.png",
+    "bytes": 45557,
+    "sha256": "e8074afdb8243d09a6ae1986fe5cbf4341967fba3f6296cab7d8da1749751a63"
+  },
+  {
+    "path": "docs/memory/evidence/37-v0.4-fresh-boot-and-usertests-start.png",
+    "bytes": 72311,
+    "sha256": "b8c3fb40e6ab8e98181bdd350ccdd601de7a82c51d7a222b5cb9dc86c264b961"
+  },
+  {
+    "path": "docs/memory/evidence/38-v0.4-full-usertests-pass-and-memstat.png",
+    "bytes": 48993,
+    "sha256": "6d3a7a1f3421a5f231c4563c038f0e61291258e7a59c8c5a9e10cec856deffb8"
+  },
+  {
+    "path": "docs/memory/evidence/39-v0.4-baseline-lazy-cow-demo.png",
+    "bytes": 89787,
+    "sha256": "9fb6667cdeea22401f5332e5eb052d4d36a3b44300729a5ceccd0cdabcdc34fc"
+  },
+  {
+    "path": "docs/memory/evidence/40-v0.4-final-forkbench-and-resource-recovery.png",
+    "bytes": 88332,
+    "sha256": "5075a05fc0826d49df7625162e68ac9fcfd145b2017d408806d6225f0ea27adb"
+  },
+  {
+    "path": "docs/memory/evidence/41-v0.4-source-staging-and-statistics.png",
+    "bytes": 153658,
+    "sha256": "d123127cb0d1da85b22acbb39c913ff89ac24ef47d21727a5f69f9a318ef09c4"
+  },
+  {
+    "path": "docs/memory/evidence/42-v0.4-commit-tag-exports-clean-status.png",
+    "bytes": 227894,
+    "sha256": "d59e2c64e1267713635f37f50b07a5ed6d972927cc541dea9bd198ba52d9439e"
+  },
+  {
+    "path": "docs/memory/evidence/43-environment-versions.png",
+    "bytes": 100542,
+    "sha256": "1dcbc8b9dc0f3a60e814ecd1dec9f25efac76f9f14b5307f4412567ff894bb71"
+  },
+  {
+    "path": "docs/memory/evidence/44-github-inherited-history-dates.png",
+    "bytes": 56278,
+    "sha256": "e6de02d168919fc36fd71b136fb0e627e887be97b7dd1fc0175fa243cc9b132f"
+  },
+  {
+    "path": "docs/memory/evidence/before-swap-commit.txt",
+    "bytes": 41,
+    "sha256": "6941963a8eab1e57555e6b46cdbdb19b6d06b0a5c5840fe00867e7693c4f0dad"
+  },
+  {
+    "path": "docs/memory/evidence/before-swap.patch",
+    "bytes": 2855,
+    "sha256": "56de9340ed4e37640b9dca940f6c432ad295fd836255be57b51c10c7d25dc9e8"
+  },
+  {
+    "path": "docs/memory/evidence/comparison-plan.md",
+    "bytes": 16714,
+    "sha256": "bfc3fd9e42e6c0d8f0d91d054514c1f697b1e5cdb3bedfa6ed8ed23369787565"
+  },
+  {
+    "path": "docs/memory/evidence/environment-versions.txt",
+    "bytes": 615,
+    "sha256": "8826c7f65bb9fa357a300246de606f66f22d1460f95142ad41e513ce513c3fe1"
+  },
+  {
+    "path": "docs/memory/evidence/memory-report-outline.md",
+    "bytes": 22017,
+    "sha256": "d080796616c6770fbe2de8cf788d9a6094cfa8359dc386de03934278e10bd453"
+  },
+  {
+    "path": "docs/memory/evidence/progress-log.md",
+    "bytes": 132174,
+    "sha256": "e175694b3339728d3fece3dec02d033db13695f460b0e7f68303583ac2005874"
+  },
+  {
+    "path": "docs/memory/evidence/setup-makefile-before-fix.png",
+    "bytes": 54449,
+    "sha256": "e941e634ec969064cab6b17d3154e55095f196396dd3f578d71a58e59305e106"
+  },
+  {
+    "path": "docs/memory/evidence/setup-makefile-fix.patch",
+    "bytes": 403,
+    "sha256": "1d5c649d5eef38d0da0f0b607e7e6576640539045634c4be2cc890db99b57fd5"
+  },
+  {
+    "path": "docs/memory/evidence/setup-qemu-package-error.txt",
+    "bytes": 81113,
+    "sha256": "85e687443cd0f9c876a2c6031585c2420f51c605d10fe0205198dd8f22c6f370"
+  },
+  {
+    "path": "docs/memory/evidence/source-version-check.txt",
+    "bytes": 967,
+    "sha256": "aac3edcfa32f6ed8f7e376199343f02f1e0f6e898b02752d46ef3e72d827fb33"
+  },
+  {
+    "path": "docs/memory/evidence/teammate-part3-handoff.md",
+    "bytes": 9379,
+    "sha256": "9e40bf5c7e90e051117a4dfa00805f42f5914b0ea14e9065541577e6b8435897"
+  },
+  {
+    "path": "docs/memory/evidence/two-person-development-plan.md",
+    "bytes": 13777,
+    "sha256": "105795ea1f625342c2fbf4798778480680c6a1d7071f042309823efa0ee7f047"
+  },
+  {
+    "path": "docs/memory/evidence/v0.0-commit.txt",
+    "bytes": 41,
+    "sha256": "d9c7e98937922f029ca19ee45dcd06f776ff5d96de61af64afcb19e4b26131c8"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-commit.txt",
+    "bytes": 41,
+    "sha256": "e71d6c1d02bc7e65b30dc174bb372473a16c325726b0cc7c3c8aafe783d13a94"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-defs-editor.png",
+    "bytes": 72972,
+    "sha256": "43158e1feb38d14c8fcba4eaeb2adf36985e9e2f87c8462342e53e50c5d2922d"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-helper-placement-editor.png",
+    "bytes": 72487,
+    "sha256": "4ca0ad99c11883977216d2839cf2e6ce7e27490f9c5f19d8d06dd55d4750cfae"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-lazy-allocation.patch",
+    "bytes": 8029,
+    "sha256": "477f02e896825f12a15dd0d3074a898caf45d840cc18bacb52118fe504974053"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-summary.md",
+    "bytes": 6090,
+    "sha256": "23a1a38f1caf26ae1c9d9c648101f168714b41c60df088e070963d5ae5b1a467"
+  },
+  {
+    "path": "docs/memory/evidence/v0.1-uvmunmap-before.png",
+    "bytes": 60544,
+    "sha256": "b5b3486e07346ef7b5efafb4955890e0564c6d67f9cc8d931e1dcfe0b4e05fb4"
+  },
+  {
+    "path": "docs/memory/evidence/v0.2-commit.txt",
+    "bytes": 41,
+    "sha256": "352a5e0fc3566261fa32b2ccdb8c0d708cb1ad7e0210f01604b0c5f88c4e2489"
+  },
+  {
+    "path": "docs/memory/evidence/v0.2-cow.patch",
+    "bytes": 10669,
+    "sha256": "c70fbedbaa36bb732a004cc0b7f97460fe68cd608b69b7a051b2ddff1b379527"
+  },
+  {
+    "path": "docs/memory/evidence/v0.2-summary.md",
+    "bytes": 5214,
+    "sha256": "d0ad0f6b6beccbb8aed875be4a0b444a9053d5a92ceec0e22c7d48e8b9ccf6ea"
+  },
+  {
+    "path": "docs/memory/evidence/v0.3-commit.txt",
+    "bytes": 41,
+    "sha256": "15ba6d4cdac25ff25c3a2cb876f0353b25b9146b33cb6d459d2933457cefb1d1"
+  },
+  {
+    "path": "docs/memory/evidence/v0.3-memstat.patch",
+    "bytes": 5413,
+    "sha256": "099e74b6bc4d9bd2438db80d6dab73b9f7ce6a46c6f5821a8605df78c116ca66"
+  },
+  {
+    "path": "docs/memory/evidence/v0.3-summary.md",
+    "bytes": 3763,
+    "sha256": "9e6a921d60d7dfe612c32f4d4439ea5b6d66f0c1534b1896dca14cf3c4483a57"
+  },
+  {
+    "path": "docs/memory/evidence/v0.4-commit.txt",
+    "bytes": 41,
+    "sha256": "9d26dc8ee14475a21aa6c8c4ef3e99d78f3223eaa6f4f566d7f80bb4cb63403a"
+  },
+  {
+    "path": "docs/memory/evidence/v0.4-pipe-fix.patch",
+    "bytes": 2813,
+    "sha256": "fd391a14a1da36015d59b9a6eafee9ef5bd409e7a89bae499c5bdd66ccd2caaa"
+  },
+  {
+    "path": "docs/memory/evidence/v0.4-summary.md",
+    "bytes": 23982,
+    "sha256": "f9b3f0a030b209308d4ff978e48186c94afa363d5049c435431c3c2da7ac74d9"
+  },
+  {
+    "path": "docs/memory/evidence/v0.4-swap-engine.patch",
+    "bytes": 22749,
+    "sha256": "e40c8ed8c2c321e084b13f737d58909ffc7f63e0fd82eb32378e57492344595f"
+  },
+  {
+    "path": "docs/memory/evidence/v0.4-swap.patch",
+    "bytes": 25379,
+    "sha256": "8cb6329921fe4071cc2aba9f62960f603108fc2bedbb8f777b55ff186ce24b5c"
+  },
+  {
+    "path": "docs/memory/additional-screenshots/lazytest.png",
+    "bytes": 80312,
+    "sha256": "ea9456c7089609c88459d2bfe70c0547aa5a9dc5a90f752f96235e47ca5ac955"
+  },
+  {
+    "path": "docs/memory/additional-screenshots/xv6 boot successful.png",
+    "bytes": 116839,
+    "sha256": "ab62fd257ac887e8ab334b370b7cf93e59f46b8c4933a5fec3bbe41609f2ff96"
+  },
+  {
+    "path": "docs/memory/additional-screenshots/xv6_boot.png",
+    "bytes": 22101,
+    "sha256": "148a70ac6d22608bf88b9e65595d9fc56152aea88d29eb054f0f7e541c172d04"
+  }
+]

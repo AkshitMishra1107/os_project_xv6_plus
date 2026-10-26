@@ -1,0 +1,134 @@
+diff --git a/Makefile b/Makefile
+index 9cb3fbf..89e079d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -62,6 +62,9 @@ OBJCOPY = $(TOOLPREFIX)objcopy
+ OBJDUMP = $(TOOLPREFIX)objdump
+ 
+ CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
++RAM_MB ?= 128
++SWAP_POLICY ?= 1
++CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
+ CFLAGS += -MD
+ CFLAGS += -mcmodel=medany
+ CFLAGS += -march=rv64gc
+@@ -135,6 +138,7 @@ UPROGS=\
+         $U/_cowtest\
+         $U/_forkbench\
+         $U/_memstat \
++  	$U/_memhog \
+ 	$U/_cat\
+ 	$U/_echo\
+ 	$U/_forktest\
+@@ -154,7 +158,7 @@ UPROGS=\
+ 
+ fs.img: mkfs/mkfs README $(UPROGS)
+ 	mkfs/mkfs fs.img README $(UPROGS)
+-
++	dd if=/dev/zero bs=1024 count=16384 >> fs.img 2>/dev/null
+ -include kernel/*.d user/*.d
+ 
+ clean: 
+diff --git a/kernel/memlayout.h b/kernel/memlayout.h
+index 9bc9424..07c56d8 100644
+--- a/kernel/memlayout.h
++++ b/kernel/memlayout.h
+@@ -37,7 +37,11 @@
+ // for use by the kernel and user pages
+ // from physical address 0x80000000 to PHYSTOP.
+ #define KERNBASE 0x80000000L
+-#define PHYSTOP (KERNBASE + 128*1024*1024)
++#ifndef RAM_MB
++#define RAM_MB 128
++#endif
++
++#define PHYSTOP (KERNBASE + RAM_MB * 1024 * 1024)
+ 
+ // map the trampoline page to the highest address,
+ // in both user and kernel space.
+diff --git a/user/memhog.c b/user/memhog.c
+new file mode 100644
+index 0000000..4de8527
+--- /dev/null
++++ b/user/memhog.c
+@@ -0,0 +1,80 @@
++#include "kernel/types.h"
++#include "user/user.h"
++#include "kernel/memstat.h"
++
++#define PAGE 4096
++
++static void
++run_workload(int mb)
++{
++  int npages = mb * 256;
++  char *base = sbrk(mb * 1024 * 1024);
++
++  if(base == (char*)-1){
++    printf("memhog: sbrk failed\n");
++    exit(1);
++  }
++
++  for(int i = 0; i < npages; i++){
++    base[i * PAGE] = i % 251;
++    base[i * PAGE + PAGE - 1] = i % 241;
++  }
++
++  int bad = 0;
++
++  for(int i = 0; i < npages; i++){
++    if(base[i * PAGE] != (char)(i % 251) ||
++       base[i * PAGE + PAGE - 1] != (char)(i % 241))
++      bad++;
++  }
++
++  struct memstat ms;
++
++  if(memstat(&ms) < 0){
++    printf("memhog: memstat failed\n");
++    exit(1);
++  }
++
++  printf("memhog: %d MB, %d pages, %d bad, "
++         "swap outs %d, swap ins %d\n",
++         mb, npages, bad,
++         (int)ms.swap_outs, (int)ms.swap_ins);
++
++  exit(bad ? 1 : 0);
++}
++
++int
++main(int argc, char *argv[])
++{
++  int mb = 12;
++
++  if(argc > 1)
++    mb = atoi(argv[1]);
++
++  if(mb < 1){
++    printf("usage: memhog [positive MB]\n");
++    exit(1);
++  }
++
++  printf("memhog: starting %d MB workload\n", mb);
++
++  int pid = fork();
++
++  if(pid < 0){
++    printf("memhog: fork failed\n");
++    exit(1);
++  }
++
++  if(pid == 0)
++    run_workload(mb);
++
++  int status = -2;
++
++  if(wait(&status) < 0){
++    printf("memhog: wait failed\n");
++    exit(1);
++  }
++
++  printf("memhog: child exit status %d\n", status);
++  exit(status == 0 ? 0 : 1);
++}

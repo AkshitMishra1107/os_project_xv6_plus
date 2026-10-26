@@ -1,0 +1,4 @@
+# Preserve captured memory evidence byte for byte, including transcript and patch whitespace.
+docs/memory/evidence/** -text -whitespace
+*.png binary
+*.docx binary
