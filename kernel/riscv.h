@@ -380,3 +380,9 @@ typedef uint64 *pagetable_t; // 512 PTEs
 // Sv39, to avoid having to sign-extend virtual addresses
 // that have the high bit set.
 #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
+#ifndef PTE_A
+#define PTE_A (1L << 6)
+#endif
+
+#define PTE2SLOT(pte) ((uint64)(pte) >> 10)
+#define SLOT2PTE(s)   ((uint64)(s) << 10)

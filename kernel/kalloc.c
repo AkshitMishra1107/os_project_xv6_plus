@@ -72,6 +72,7 @@ kfree(void *pa)
   release(&pgref.lock);
 
   // Nobody owns this page now.
+swap_untrack((uint64)pa);
   memset(pa, 1, PGSIZE);
   r = (struct run*)pa;
 

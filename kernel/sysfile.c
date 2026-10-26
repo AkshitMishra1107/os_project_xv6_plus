@@ -76,7 +76,10 @@ sys_read(void)
   argint(2, &n);
   if(argfd(0, 0, &f) < 0)
     return -1;
-  return fileread(f, p, n);
+  if(n > 0)
+    prefault(p, n, 1);
+
+return fileread(f, p, n);
 }
 
 uint64
@@ -90,7 +93,8 @@ sys_write(void)
   argint(2, &n);
   if(argfd(0, 0, &f) < 0)
     return -1;
-
+  if(n > 0)
+    prefault(p, n, 0);
   return filewrite(f, p, n);
 }
 

@@ -37,6 +37,28 @@ pin_user_page(pagetable_t pagetable, uint64 va, int write)
 
   return 0;
 }
+
+// Prepare user-buffer pages before read/write copies.
+void
+prefault(uint64 va, uint64 n, int write)
+{
+  struct proc *p = myproc();
+
+  if(n == 0 || va >= p->sz)
+    return;
+
+  uint64 end = va + n;
+
+  if(end < va || end > p->sz)
+    end = p->sz;
+
+  for(uint64 a = PGROUNDDOWN(va); a < end; a += PGSIZE){
+    if(pin_user_page(p->pagetable, a, write) == 0)
+      break;
+
+    pop_off();
+  }
+}
 /*
  * the kernel's page table.
  */
@@ -206,7 +228,8 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
 // page-aligned. The mappings must exist.
 // Optionally free the physical memory.
 void
-uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
+uvmunmap(pagetable_t pagetable, uint64 va,
+         uint64 npages, int do_free)
 {
   uint64 a;
   pte_t *pte;
@@ -214,18 +237,38 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
   if((va % PGSIZE) != 0)
     panic("uvmunmap: not aligned");
 
-  for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
-    if((pte = walk(pagetable, a, 0)) == 0)
-  continue;
-    if((*pte & PTE_V) == 0)
-  continue;
+  for(a = va; a < va + npages * PGSIZE; a += PGSIZE){
+    push_off();
+
+    pte = walk(pagetable, a, 0);
+
+    if(pte == 0){
+      pop_off();
+      continue;
+    }
+
+    if((*pte & PTE_V) == 0){
+      if(*pte & PTE_SWAP){
+        swap_slot_free(PTE2SLOT(*pte));
+        *pte = 0;
+      }
+
+      pop_off();
+      continue;
+    }
+
     if(PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
+
     if(do_free){
       uint64 pa = PTE2PA(*pte);
-      kfree((void*)pa);
+
+      swap_untrack_owner(pa, pagetable);
+      kfree((void *)pa);
     }
+
     *pte = 0;
+    pop_off();
   }
 }
 
@@ -271,7 +314,7 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)
 
   oldsz = PGROUNDUP(oldsz);
   for(a = oldsz; a < newsz; a += PGSIZE){
-    mem = kalloc();
+    mem = kalloc_user();
     if(mem == 0){
       uvmdealloc(pagetable, a, oldsz);
       return 0;
@@ -282,6 +325,7 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)
       uvmdealloc(pagetable, a, oldsz);
       return 0;
     }
+    swap_track((uint64)mem, pagetable, a);
   }
   return newsz;
 }
@@ -348,26 +392,44 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
   uint flags;
 
   for(i = 0; i < sz; i += PGSIZE){
-    if((pte = walk(old, i, 0)) == 0)
-      continue;
+    for(;;){
+      push_off();
 
-    if((*pte & PTE_V) == 0)
+      pte = walk(old, i, 0);
+
+      if(pte && (*pte & PTE_SWAP)){
+        pop_off();
+
+        // Restore the parent's page before sharing it.
+        if(handle_page_fault(myproc(), i, 0) < 0)
+          goto err;
+
+        // Swap-in may have slept: inspect again.
+        continue;
+      }
+
+      break;
+    }
+
+    if(pte == 0 || (*pte & PTE_V) == 0){
+      pop_off();
       continue;
+    }
 
     pa = PTE2PA(*pte);
 
-    if(*pte & PTE_W){
-      // Writable pages become COW in both processes.
+    if(*pte & PTE_W)
       *pte = (*pte & ~PTE_W) | PTE_COW;
-    }
 
     flags = PTE_FLAGS(*pte);
 
-    // Map the same physical page into the child.
-    if(mappages(new, i, PGSIZE, pa, flags) != 0)
+    if(mappages(new, i, PGSIZE, pa, flags) != 0){
+      pop_off();
       goto err;
+    }
 
-    kref_inc((void*)pa);
+    kref_inc((void *)pa);
+    pop_off();
   }
 
   sfence_vma();

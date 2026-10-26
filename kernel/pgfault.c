@@ -9,62 +9,117 @@
 int
 handle_page_fault(struct proc *p, uint64 va, int is_write)
 {
+  pagetable_t pt = p->pagetable;
+  char *mem = 0;
+
   stat_faults++;
+
   if(va >= p->sz)
     return -1;
 
   va = PGROUNDDOWN(va);
 
-  pte_t *pte = walk(p->pagetable, va, 0);
+  for(;;){
+    push_off();
 
-  // Case 1: first access to an untouched lazy page.
-  if(pte == 0 || (*pte & PTE_V) == 0){
-    char *mem = kalloc();
+    pte_t *pte = walk(pt, va, 0);
 
-    if(mem == 0)
-      return -1;
+    int lazy =
+      (pte == 0) || ((*pte & (PTE_V | PTE_SWAP)) == 0);
 
-    memset(mem, 0, PGSIZE);
+    int swapped =
+      (pte != 0) && (*pte & PTE_SWAP);
 
-    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem,
-                PTE_R | PTE_W | PTE_U) != 0){
-      kfree(mem);
-      return -1;
-    }
-    stat_lazy++;
-    return 0;
-  }
+    int cow =
+      (pte != 0) && (*pte & PTE_V) &&
+      is_write && (*pte & PTE_COW);
 
-  // Case 2: write to a copy-on-write page.
-  if(is_write && (*pte & PTE_COW)){
-    uint64 pa = PTE2PA(*pte);
+    int copy =
+      cow && kref_get((void *)PTE2PA(*pte)) > 1;
 
-    if(kref_get((void*)pa) == 1){
-      // Already private: restore write permission.
-      *pte = (*pte & ~PTE_COW) | PTE_W;
-    } else {
-      char *mem = kalloc();
+    if((lazy || swapped || copy) && mem == 0){
+      // Allocation may sleep while another page is swapped out.
+      pop_off();
+
+      if(swapped && nlocks_held() > 0)
+        return -1;
+
+      mem = kalloc_user();
 
       if(mem == 0)
         return -1;
 
-      memmove(mem, (char*)pa, PGSIZE);
+      // Allocation may have slept: inspect the entry again.
+      continue;
+    }
+
+    // Case 1: restore a page from disk.
+    if(swapped){
+      pop_off();
+      swap_in(pt, va, pte, mem);
+      return 0;
+    }
+
+    // Case 2: first access to an untouched lazy page.
+    if(lazy){
+      memset(mem, 0, PGSIZE);
+
+      if(mappages(pt, va, PGSIZE, (uint64)mem,
+                  PTE_R | PTE_W | PTE_U) != 0){
+        pop_off();
+        kfree(mem);
+        return -1;
+      }
+
+      swap_track((uint64)mem, pt, va);
+      stat_lazy++;
+
+      pop_off();
+      return 0;
+    }
+
+    // Case 3: write to a copy-on-write page.
+    if(cow){
+      uint64 pa = PTE2PA(*pte);
+
+      if(kref_get((void *)pa) == 1){
+        // The page already has only one owner.
+        *pte = (*pte & ~PTE_COW) | PTE_W;
+
+        swap_track(pa, pt, va);
+        sfence_vma();
+
+        pop_off();
+
+        if(mem)
+          kfree(mem);
+
+        return 0;
+      }
+
+      memmove(mem, (char *)pa, PGSIZE);
 
       uint64 flags =
         (*pte & (PTE_R | PTE_X | PTE_U)) | PTE_W | PTE_V;
 
-      // Replace this process's mapping with its private copy.
       *pte = PA2PTE(mem) | flags;
 
-      // Release this process's reference to the old page.
-      kfree((void*)pa);
+      sfence_vma();
+      swap_track((uint64)mem, pt, va);
+
+      kfree((void *)pa);
       stat_cow++;
+
+      pop_off();
+      return 0;
     }
 
-    sfence_vma();
-    return 0;
-  }
+    // Invalid access or a genuinely read-only mapping.
+    pop_off();
 
-  // Invalid access or a write to a genuinely read-only page.
-  return -1;
+    if(mem)
+      kfree(mem);
+
+    return -1;
+  }
 }

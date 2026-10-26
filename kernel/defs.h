@@ -121,6 +121,7 @@ void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
 void            push_off(void);
 void            pop_off(void);
+int             nlocks_held(void);
 
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);
@@ -171,6 +172,7 @@ uint64          uvmdealloc(pagetable_t, uint64, uint64);
 int             uvmcopy(pagetable_t, pagetable_t, uint64);
 void            uvmfree(pagetable_t, uint64);
 void            uvmunmap(pagetable_t, uint64, uint64, int);
+void            prefault(uint64, uint64, int);
 void            uvmclear(pagetable_t, uint64);
 pte_t *         walk(pagetable_t, uint64, int);
 uint64          walkaddr(pagetable_t, uint64);
@@ -193,6 +195,15 @@ void            virtio_disk_intr(void);
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 int handle_page_fault(struct proc*, uint64, int);
 // swap.c
+void            swap_init(void);
+void*           kalloc_user(void);
+void            swap_track(uint64, pagetable_t, uint64);
+void            swap_untrack(uint64);
+void            swap_untrack_owner(uint64, pagetable_t);
+int             swap_out_one(void);
+void            swap_in(pagetable_t, uint64, pte_t*, void*);
+void            swap_slot_free(int);
 void            memstat_fill(struct memstat*);
-extern uint64   stat_faults, stat_lazy, stat_cow;
-extern uint64   stat_swapin, stat_swapout;
+
+extern uint64 stat_faults, stat_lazy, stat_cow;
+extern uint64 stat_swapin, stat_swapout;

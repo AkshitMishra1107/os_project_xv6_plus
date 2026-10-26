@@ -139,6 +139,8 @@ UPROGS=\
         $U/_forkbench\
         $U/_memstat \
   	$U/_memhog \
+	$U/_swapfork\
+	$U/_hotcold\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\

@@ -109,3 +109,11 @@ pop_off(void)
   if(c->noff == 0 && c->intena)
     intr_on();
 }
+int
+nlocks_held(void)
+{
+  push_off();
+  int n = mycpu()->noff - 1;
+  pop_off();
+  return n;
+}
