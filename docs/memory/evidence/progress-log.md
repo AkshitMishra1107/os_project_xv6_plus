@@ -4,7 +4,7 @@ Record created: 22 October 2026 (Asia/Calcutta).
 
 ## Current status
 
-The completed memory base remains v0.4 commit `93fa86df3ddda8691cc2c260b373dd58f726620f`, with the original v0.4-swap branch and tags preserved. On 27 October the user supplied https://github.com/AkshitMishra1107/os_project_xv6_plus and explicitly authorized the assistant to push all saved progress and create separate detailed guides. The destination was empty. The assistant retained the MIT remote as upstream, configured the shared repository as origin, created main at v0.4 and successfully pushed main, five project milestone branches, v0.0 through v0.4 tags and before-swap. Documentation, evidence publication and two feature branches are being prepared. No kernel implementation or runtime test has been changed or run during this publishing task. Full Part 3 still requires the v0.9 thread foundation; standalone tracing is the teammate's first proposed runnable task.
+The completed memory source remains tag v0.4 at 93fa86df3ddda8691cc2c260b373dd58f726620f. With the user's explicit authorization, its history, milestone branches and release tags are now published to https://github.com/AkshitMishra1107/os_project_xv6_plus. The documentation checkpoint accdcc8 adds the README, two complete role manuals, original source guides, PR template, shared records and all 79 copied evidence files. main, feature/threads-sync and feature/signals-debugger have been published at that checkpoint. MIT remains upstream and the team repository is origin. The working branches contain the same v0.4 implementation plus documentation; Part 2 and Part 3 are future work. The teammate invitation has not been sent because their account has not been supplied. Akshit begins the thread foundation; the teammate begins the adapted tracing prototype. No kernel code or runtime test was changed or executed during publication.
 
 ## Working arrangement
 
@@ -1272,3 +1272,12 @@ The teammate begins a tracing prototype adapted to v0.4 on feature/signals-debug
 Document QA: Microsoft Word read-only PDF export plus bundled Poppler rasterization was used after the packaged renderer reported no LibreOffice executable. Every final page was visually reviewed: 39 pages for Akshit and 43 for the teammate. Table rows were repaired to stay together. No kernel runtime validation was rerun because source and Makefile are unchanged from v0.4.
 
 Both feature branches have been created locally at the shared source base and will be advanced normally to the documentation checkpoint for publication. The teammate collaborator invitation still requires the teammate account and has not been sent.
+
+
+### 67. Guides evidence and working branches published
+
+The documentation checkpoint accdcc8 was committed with message docs: preserve memory evidence and add two person implementation guides. It adds 95 files, including the 39 page Akshit manual, 43 page teammate manual, searchable Markdown versions, three unchanged original guides, README, PR template and shared evidence directories. The source code blocks were checked for completeness against both originals. All 79 evidence blobs in the committed Git tree match their saved SHA256 digests; original reference guides and final guide digests match as well.
+
+An atomic push succeeded for main and both new feature branches. Both branches track the corresponding origin refs. Each person now uses their own branch and identity; reviewed milestone PRs merge into main with merge commits, and Akshit tags validated integrated releases. The source under kernel, user and Makefile is unchanged from v0.4. No new runtime pass is claimed by this documentation task. This follow-up record will be committed and published normally on the same three branches.
+
+Next human step: the owner invites the teammate account in GitHub repository Settings and Collaborators, the teammate accepts, clones the repository and follows their manual. Akshit continues in the existing checkout on feature/threads-sync. A PR is opened after there are actual feature commits to review; no empty PR was created by the bootstrap.

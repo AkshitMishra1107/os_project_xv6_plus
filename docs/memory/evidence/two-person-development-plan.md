@@ -1,5 +1,7 @@
 # Two person development and GitHub plan
 
+Publication complete on 27 October: main and both feature branches are on the shared repository with the detailed manuals and byte verified memory evidence at documentation checkpoint accdcc8. Use the tailored manuals under docs/guides for all new work. The teammate invitation remains a human setup step. The following earlier setup language records the planning sequence rather than the current repository state.
+
 Current update on 27 October: the user supplied https://github.com/AkshitMishra1107/os_project_xv6_plus and explicitly authorized publication plus two detailed role manuals. The saved memory history, five milestone branches, v0.0 through v0.4 tags and before-swap have now been pushed successfully. MIT is retained as upstream and the shared repo is origin. The new main begins at the saved v0.4 source. The tailored guides in repository docs/guides supersede the earlier setup proposals below. Feature branches and documentation publication are being finalized; no kernel feature implementation has been performed by this publishing task. Earlier dated planning statements below remain a historical record.
 
 Prepared 26 October 2026. Proposed allocation and workflow for review; no GitHub repository, invitation, branch, push, or new implementation has been created by the assistant.

@@ -1,5 +1,7 @@
 # Part 3 teammate handoff
 
+Publication complete on 27 October: main and both feature branches are on the shared repository with the detailed manuals and byte verified memory evidence at documentation checkpoint accdcc8. Use the tailored manuals under docs/guides for all new work. The teammate invitation remains a human setup step. The following earlier setup language records the planning sequence rather than the current repository state.
+
 Current update on 27 October: the shared repository is https://github.com/AkshitMishra1107/os_project_xv6_plus and the saved memory history has been published. Follow the detailed tailored teammate Word manual under docs/guides after the bootstrap is complete. It includes the actual clone URL, the feature/signals-debugger branch routine, prototype adaptation, commit and PR sequence and full source chapters. The earlier offline bundle proposal below is retained only as historical planning; no bundle was required for the successful GitHub publication.
 
 Prepared 27 October 2026. Your assigned area is signals, syscall tracing, and the debugger. The user now proposes creating a shared GitHub repository immediately for simultaneous work, and reports that you already have Ubuntu/build tools. Prefer cloning that shared repository once its URL is ready; the bundle instructions below remain an optional offline fallback. No repository or clone is confirmed yet.

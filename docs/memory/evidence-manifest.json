@@ -256,8 +256,8 @@
   },
   {
     "path": "docs/memory/evidence/progress-log.md",
-    "bytes": 132174,
-    "sha256": "e175694b3339728d3fece3dec02d033db13695f460b0e7f68303583ac2005874"
+    "bytes": 133699,
+    "sha256": "cffaa3c4ce4b94801e9ab769dafbce9b4f3436f4644011445b1aece1a37e49f8"
   },
   {
     "path": "docs/memory/evidence/setup-makefile-before-fix.png",
@@ -281,13 +281,13 @@
   },
   {
     "path": "docs/memory/evidence/teammate-part3-handoff.md",
-    "bytes": 9379,
-    "sha256": "9e40bf5c7e90e051117a4dfa00805f42f5914b0ea14e9065541577e6b8435897"
+    "bytes": 9918,
+    "sha256": "76d4df54591263a2836fdcf16b0fb98bcd0d68d8c1bac12b93d0feb01f783604"
   },
   {
     "path": "docs/memory/evidence/two-person-development-plan.md",
-    "bytes": 13777,
-    "sha256": "105795ea1f625342c2fbf4798778480680c6a1d7071f042309823efa0ee7f047"
+    "bytes": 14339,
+    "sha256": "01b8131f8b531c8c39506aa32a0713577955695014b34711585553845480dca4"
   },
   {
     "path": "docs/memory/evidence/v0.0-commit.txt",
