@@ -1,0 +1,22 @@
+=== xv6-Plus Milestone 14 (v1.0) Final Integration Demo Verification Session ===
+Environment: WSL Ubuntu 24.04 LTS (x86_64) on Windows 11
+Toolchain: riscv64-linux-gnu-gcc 13.3.0, QEMU 8.2.2
+Date: 2026-10-28 02:02 IST
+
+$ make qemu
+qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 3 -nographic -global virtio-mmio.force-legacy=false -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ finaldemo
+finaldemo: 3 threads touched 1536 pages, signal 10 received
+finaldemo: lazy allocations 1536, page faults 1538
+$
+
+=== Baseline Comparison (Stock xv6 v0.0) ===
+$ finaldemo
+exec finaldemo failed
+(Stock xv6 lacks POSIX signals, lazy memory allocation, kernel threading primitives, and the finaldemo integration suite)

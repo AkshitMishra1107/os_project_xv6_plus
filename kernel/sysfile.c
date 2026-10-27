@@ -15,6 +15,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "dbg.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -470,6 +471,8 @@ sys_exec(void)
   for(i = 0; i < NELEM(argv) && argv[i] != 0; i++)
     kfree(argv[i]);
 
+  if(ret >= 0 && myproc()->traced)
+    dbg_stop(myproc(), DBG_EXEC);       // let the debugger plant breakpoints first
   return ret;
 
  bad:

@@ -21,3 +21,14 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_memstat 22
+#define SYS_trace  29
+#define SYS_sigaction 30
+#define SYS_sigsend   31
+#define SYS_sigreturn 32
+#define SYS_pause     33
+#define SYS_dbg_traceme 34
+#define SYS_dbg_wait    35
+#define SYS_dbg_cont    36
+#define SYS_dbg_getregs 37
+#define SYS_dbg_peek    38
+#define SYS_dbg_poke    39

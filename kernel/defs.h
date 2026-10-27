@@ -138,6 +138,12 @@ int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
 
+// signal.c
+void            signal_init(void);
+void            deliver_signals(struct proc*);
+int             signal_pending(struct proc*);
+int             sigsend(int, int);
+
 // syscall.c
 void            argint(int, int*);
 int             argstr(int, char*, int);
@@ -177,8 +183,12 @@ void            uvmclear(pagetable_t, uint64);
 pte_t *         walk(pagetable_t, uint64, int);
 uint64          walkaddr(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);
+int             copyout_force(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);
 int             copyinstr(pagetable_t, char *, uint64, uint64);
+
+// dbg.c
+void            dbg_stop(struct proc*, int);
 
 // plic.c
 void            plicinit(void);

@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "dbg.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -65,7 +66,10 @@ usertrap(void)
     intr_on();
 
     syscall();
-  } else if((which_dev = devintr()) != 0){} else if(r_scause()==12 || r_scause() == 13 || r_scause() == 15){
+  } else if(r_scause() == 3 && p->traced){
+    // ebreak in a traced process: freeze here; epc still points at the ebreak
+    dbg_stop(p, DBG_BREAK);
+  } else if(r_scause()==12 || r_scause() == 13 || r_scause() == 15){
   // Load or store page fault.
   if(handle_page_fault(p, r_stval(), r_scause() == 15) < 0)
     setkilled(p);
@@ -83,6 +87,8 @@ usertrap(void)
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
     yield();
+
+  deliver_signals(p);
 
   usertrapret();
 }
@@ -129,6 +135,8 @@ usertrapret(void)
   // jump to userret in trampoline.S at the top of memory, which 
   // switches to the user page table, restores user registers,
   // and switches to user mode with sret.
+  if(p->traced)
+    asm volatile("fence.i");
   uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
   ((void (*)(uint64))trampoline_userret)(satp);
 }

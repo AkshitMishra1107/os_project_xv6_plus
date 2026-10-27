@@ -124,6 +124,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->trace_mask = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -168,6 +169,15 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->trace_mask = 0;
+  p->sig_pending = 0;
+  p->in_handler = 0;
+  for(int s = 0; s < NSIG; s++){
+    p->sig_handler[s] = 0;
+    p->sig_restorer[s] = 0;
+  }
+  p->traced = 0;
+  p->dbg_state = 0;
   p->state = UNUSED;
 }
 
@@ -309,6 +319,11 @@ fork(void)
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
+  np->trace_mask = p->trace_mask;
+  for(i = 0; i < NSIG; i++){
+    np->sig_handler[i] = p->sig_handler[i];
+    np->sig_restorer[i] = p->sig_restorer[i];
+  }
 
   pid = np->pid;
 
@@ -335,6 +350,12 @@ reparent(struct proc *p)
   for(pp = proc; pp < &proc[NPROC]; pp++){
     if(pp->parent == p){
       pp->parent = initproc;
+      if(pp->traced){                   // do not leave a frozen child behind
+        pp->traced = 0;
+        pp->dbg_state = 0;
+        wakeup(&pp->dbg_state);
+        kill(pp->pid);
+      }
       wakeup(initproc);
     }
   }

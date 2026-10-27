@@ -1,3 +1,5 @@
+#include "sigdefs.h"
+
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -104,4 +106,12 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int trace_mask;              // bit n set: print system call number n
+  uint32 sig_pending;          // bit n set = signal n is waiting
+  uint64 sig_handler[NSIG];    // per signal: SIG_DFL, SIG_IGN or a user function address
+  uint64 sig_restorer[NSIG];   // user function that calls sigreturn
+  struct trapframe sig_saved;  // the interrupted registers while a handler runs
+  int in_handler;              // 1 while a handler runs
+  int traced;                  // 1 if the parent is allowed to control this process
+  int dbg_state;               // 0 running; otherwise the reason it is stopped
 };

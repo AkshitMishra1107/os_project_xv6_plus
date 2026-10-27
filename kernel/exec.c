@@ -124,6 +124,13 @@ exec(char *path, char **argv)
   oldpagetable = p->pagetable;
   p->pagetable = pagetable;
   p->sz = sz;
+  for(int s = 0; s < NSIG; s++){          // caught signals go back to default
+    if(p->sig_handler[s] != SIG_IGN)
+      p->sig_handler[s] = SIG_DFL;
+    p->sig_restorer[s] = 0;
+  }
+  p->sig_pending = 0;
+  p->in_handler = 0;
   p->trapframe->epc = elf.entry;  // initial program counter = main
   p->trapframe->sp = sp; // initial stack pointer
   proc_freepagetable(oldpagetable, oldsz);
