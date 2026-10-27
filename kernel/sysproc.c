@@ -118,3 +118,13 @@ sys_memstat(void)
 
   return 0;
 }
+
+uint64
+sys_trace(void)
+{
+  int mask;
+
+  argint(0, &mask);
+  myproc()->trace_mask = mask;
+  return 0;
+}
