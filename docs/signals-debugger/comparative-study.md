@@ -84,12 +84,34 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 
 | Milestone | Command / Benchmark | Expected Output | Stock xv6 Baseline Result | xv6-Plus Result | Evidence Artifact |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **v0.10** | `trace 32 cat README` | Syscall `read` entries with byte counts, ending with `-> 0` | `exec trace failed` | ✅ **PASS:** Intercepted all `read` calls (512, 512, 512, 512, 244, 0 bytes) | `docs/signals-debugger/evidence/v010-trace-session.txt` |
-| **v0.10** | `trace 128 echo hi` | `syscall exec -> 2` printed, then output | `exec trace failed` | ✅ **PASS:** Printed `4: syscall exec -> 2` and `hi` | `docs/signals-debugger/evidence/v010-trace-session.txt` |
-| **v0.10** | `trace 2 sh` → `ls` | `syscall fork -> <pid>` printed | `exec trace failed` | ✅ **PASS:** Fork inheritance verified, printed `5: syscall fork -> 6` | `docs/signals-debugger/evidence/v010-trace-session.txt` |
+| **v0.10** | `trace 32 cat README` | Syscall `read` entries with byte counts, ending with `-> 0` | `exec trace failed` | ✅ **PASS:** Intercepted all `read` calls (512, 512, 512, 512, 244, 0 bytes) | `v010-trace-session.txt` & `01-trace-read-test.png` |
+| **v0.10** | `trace 128 echo hi` | `syscall exec -> 2` printed, then output | `exec trace failed` | ✅ **PASS:** Printed `4: syscall exec -> 2` and `hi` | `v010-trace-session.txt` & `02-trace-exec-test.png` |
+| **v0.10** | `trace 2 sh` → `ls` | `syscall fork -> <pid>` printed | `exec trace failed` | ✅ **PASS:** Fork inheritance verified, printed `5: syscall fork -> 6` | `v010-trace-session.txt` & `03-trace-fork-inheritance.png` |
+| **v0.10** | Baseline Comparison | Side-by-side run of `trace 32 cat README` | `exec trace failed` | Full dynamic syscall tracing | `04-baseline-vs-plus-trace.png` |
+| **v0.10** | Memory Regression | `lazytest`, `cowtest`, `forkbench` pass | N/A (baseline xv6 lacks memory extensions) | ✅ **PASS:** 656 lazy pages, COW OK, 6 ticks forkbench | `05-regression-lazy-cow-forkbench.png` |
 | **v0.11** | `sigtest` (5 subtests) | `1 ok`, `2 ok`, `3 ok`, `4 ok`, `5 ok`, `ALL OK` | Command not found | *(Pending v0.11 run)* | `v011-sigtest-session.txt` |
 | **v0.12** | `dbgmini` | Reason 1 (exec stop) → reason 3 (exited) | Command not found | *(Pending v0.12 run)* | `v012-dbgmini-session.txt` |
 | **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | Crashes with scause 3 | *(Pending v0.13 run)* | `v013-dbg-session.txt` |
 | **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | *(Pending v1.0 run)* | `v10-finaldemo-session.txt` |
 
 *(This log is updated dynamically as each milestone is executed and verified.)*
+
+---
+
+## 5. Visual Evidence Gallery (Milestone v0.10)
+
+### 5.1 Dynamic System Call Tracing (`trace 32 cat README`)
+![Trace Read Test](evidence/01-trace-read-test.png)
+
+### 5.2 Command Execution Tracing (`trace 128 echo hi`)
+![Trace Exec Test](evidence/02-trace-exec-test.png)
+
+### 5.3 Trace Mask Inheritance Across `fork()` into Subshell
+![Trace Fork Inheritance](evidence/03-trace-fork-inheritance.png)
+
+### 5.4 Comparative Study: Stock MIT xv6 Baseline vs. xv6-Plus
+![Baseline vs xv6-Plus](evidence/04-baseline-vs-plus-trace.png)
+
+### 5.5 Regression Verification (Part 1 Compatibility Maintained)
+![Memory Regression Tests](evidence/05-regression-lazy-cow-forkbench.png)
+
