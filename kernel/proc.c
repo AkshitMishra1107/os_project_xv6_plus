@@ -170,6 +170,12 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->trace_mask = 0;
+  p->sig_pending = 0;
+  p->in_handler = 0;
+  for(int s = 0; s < NSIG; s++){
+    p->sig_handler[s] = 0;
+    p->sig_restorer[s] = 0;
+  }
   p->state = UNUSED;
 }
 
@@ -312,6 +318,10 @@ fork(void)
 
   safestrcpy(np->name, p->name, sizeof(p->name));
   np->trace_mask = p->trace_mask;
+  for(i = 0; i < NSIG; i++){
+    np->sig_handler[i] = p->sig_handler[i];
+    np->sig_restorer[i] = p->sig_restorer[i];
+  }
 
   pid = np->pid;
 

@@ -22,3 +22,7 @@
 #define SYS_close  21
 #define SYS_memstat 22
 #define SYS_trace  29
+#define SYS_sigaction 30
+#define SYS_sigsend   31
+#define SYS_sigreturn 32
+#define SYS_pause     33

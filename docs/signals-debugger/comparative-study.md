@@ -89,7 +89,8 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 | **v0.10** | `trace 2 sh` → `ls` | `syscall fork -> <pid>` printed | `exec trace failed` | ✅ **PASS:** Fork inheritance verified, printed `5: syscall fork -> 6` | `v010-trace-session.txt` & `03-trace-fork-inheritance.png` |
 | **v0.10** | Baseline Comparison | Side-by-side run of `trace 32 cat README` | `exec trace failed` | Full dynamic syscall tracing | `04-baseline-vs-plus-trace.png` |
 | **v0.10** | Memory Regression | `lazytest`, `cowtest`, `forkbench` pass | N/A (baseline xv6 lacks memory extensions) | ✅ **PASS:** 656 lazy pages, COW OK, 6 ticks forkbench | `05-regression-lazy-cow-forkbench.png` |
-| **v0.11** | `sigtest` (5 subtests) | `1 ok`, `2 ok`, `3 ok`, `4 ok`, `5 ok`, `ALL OK` | Command not found | *(Pending v0.11 run)* | `v011-sigtest-session.txt` |
+| **v0.11** | `sigtest` (5 subtests) | `1 ok`, `2 ok`, `3 ok`, `4 ok`, `5 ok`, `ALL OK` | `exec sigtest failed` | ✅ **PASS:** Verified signal to self, inter-process signal waking `pause()`, default termination, ignored signal (`SIG_IGN`), and sleep interruption | `v011-signals-session.txt` & `06-signals-sigtest.png` |
+| **v0.11** | Baseline Comparison | Side-by-side run of signal operations | `exec sigtest failed` (no signal infrastructure) | Complete POSIX signal model with register-safe restorer | `07-signals-vs-baseline.png` |
 | **v0.12** | `dbgmini` | Reason 1 (exec stop) → reason 3 (exited) | Command not found | *(Pending v0.12 run)* | `v012-dbgmini-session.txt` |
 | **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | Crashes with scause 3 | *(Pending v0.13 run)* | `v013-dbg-session.txt` |
 | **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | *(Pending v1.0 run)* | `v10-finaldemo-session.txt` |
@@ -114,4 +115,21 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 
 ### 5.5 Regression Verification (Part 1 Compatibility Maintained)
 ![Memory Regression Tests](evidence/05-regression-lazy-cow-forkbench.png)
+
+---
+
+## 6. Visual Evidence Gallery (Milestone v0.11 — Signals)
+
+### 6.1 Complete Signal Subsystem Verification (`sigtest`)
+All 5 comprehensive test cases passing consistently across multiple runs, verifying:
+1. Signal delivery to self and user-defined handler invocation with stack integrity
+2. Inter-process signaling waking `pause()`
+3. Default termination for uncaught signals (`SIG_DFL`)
+4. Signal suppression for ignored signals (`SIG_IGN`)
+5. Early wakeup and `-1` return value preservation on interrupted `sleep()` calls
+![Signals Sigtest Verification](evidence/06-signals-sigtest.png)
+
+### 6.2 Architectural Comparison: Signals in Stock xv6 vs. xv6-Plus
+Side-by-side terminal session highlighting the fundamental architectural gap between stock MIT xv6 (which lacks any asynchronous signal infrastructure or user handlers) and xv6-Plus's complete POSIX signal framework.
+![Signals Baseline vs xv6-Plus](evidence/07-signals-vs-baseline.png)
 

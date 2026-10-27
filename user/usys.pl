@@ -38,3 +38,7 @@ entry("sleep");
 entry("uptime");
 entry("memstat");
 entry("trace");
+entry("sigaction");
+entry("sigsend");
+entry("sigreturn");
+entry("pause");

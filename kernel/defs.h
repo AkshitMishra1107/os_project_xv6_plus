@@ -138,6 +138,12 @@ int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
 
+// signal.c
+void            signal_init(void);
+void            deliver_signals(struct proc*);
+int             signal_pending(struct proc*);
+int             sigsend(int, int);
+
 // syscall.c
 void            argint(int, int*);
 int             argstr(int, char*, int);

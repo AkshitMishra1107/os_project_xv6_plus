@@ -26,6 +26,10 @@ int sleep(int);
 int uptime(void);
 int memstat(struct memstat*);
 int trace(int);
+int sigaction(int, uint64, uint64);
+int sigsend(int, int);
+int sigreturn(void);
+int pause(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

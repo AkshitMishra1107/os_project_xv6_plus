@@ -84,6 +84,8 @@ usertrap(void)
   if(which_dev == 2)
     yield();
 
+  deliver_signals(p);
+
   usertrapret();
 }
 
