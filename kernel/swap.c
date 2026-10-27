@@ -55,7 +55,9 @@ uint64 stat_swapout;
 void
 swap_init(void)
 {
+ initlock(&ptlock, "ptlock");
   initsleeplock(&swap_lock, "swap");
+
 }
 
 static int
@@ -90,6 +92,8 @@ swap_slots_used(void)
 void
 memstat_fill(struct memstat *ms)
 {
+  acquire(&ptlock);
+
   ms->page_faults = stat_faults;
   ms->lazy_allocs = stat_lazy;
   ms->cow_copies = stat_cow;
@@ -97,6 +101,8 @@ memstat_fill(struct memstat *ms)
   ms->swap_ins = stat_swapin;
   ms->free_pages = kfreepages();
   ms->swap_slots_used = swap_slots_used();
+
+  release(&ptlock);
 }
 
 static void
@@ -128,12 +134,17 @@ void
 swap_track(uint64 pa, pagetable_t pt, uint64 va)
 {
   push_off();
+  int locked_here = !holding(&ptlock);
+  if(locked_here)
+    acquire(&ptlock);
 
   struct frame *f = &frames[FRAMEIDX(pa)];
   f->pt = pt;
   f->va = va;
   f->seq = next_seq++;
 
+  if(locked_here)
+    release(&ptlock);
   pop_off();
 }
 
@@ -141,7 +152,14 @@ void
 swap_untrack(uint64 pa)
 {
   push_off();
+  int locked_here = !holding(&ptlock);
+  if(locked_here)
+    acquire(&ptlock);
+
   frames[FRAMEIDX(pa)].pt = 0;
+
+  if(locked_here)
+    release(&ptlock);
   pop_off();
 }
 
@@ -149,11 +167,16 @@ void
 swap_untrack_owner(uint64 pa, pagetable_t pt)
 {
   push_off();
+  int locked_here = !holding(&ptlock);
+  if(locked_here)
+    acquire(&ptlock);
 
   struct frame *f = &frames[FRAMEIDX(pa)];
   if(f->pt == pt)
     f->pt = 0;
 
+  if(locked_here)
+    release(&ptlock);
   pop_off();
 }
 
@@ -242,7 +265,7 @@ swap_out_one(void)
   int ret = -1;
 
   acquiresleep(&swap_lock);
-  push_off();
+  acquire(&ptlock);
 
   int i = pick_victim();
   int slot = -1;
@@ -259,17 +282,21 @@ swap_out_one(void)
 
       *pte = SLOT2PTE(slot) | PTE_SWAP | perm;
       sfence_vma();
-
       frames[i].pt = 0;
     }
   }
 
-  pop_off();
+  release(&ptlock);
 
   if(i >= 0 && slot >= 0){
+    // Disk I/O must run without the page-table spinlock.
     swap_write(slot, pa);
+
+    acquire(&ptlock);
     kfree((void *)pa);
     stat_swapout++;
+    release(&ptlock);
+
     ret = 0;
   }
 
@@ -293,18 +320,45 @@ kalloc_user(void)
 void
 swap_in(pagetable_t pt, uint64 va, pte_t *pte, void *mem)
 {
-  int slot = PTE2SLOT(*pte);
-  uint64 perm = *pte & (PTE_R | PTE_W | PTE_X | PTE_U);
-
   acquiresleep(&swap_lock);
+  acquire(&ptlock);
+
+  // Waiting for the swap lock may have changed the mapping.
+  pte = walk(pt, va, 0);
+  if(pte == 0 || (*pte & PTE_SWAP) == 0){
+    release(&ptlock);
+    releasesleep(&swap_lock);
+    kfree(mem);
+    return;
+  }
+
+  pte_t expected = *pte;
+  int slot = PTE2SLOT(expected);
+  uint64 perm = expected & (PTE_R | PTE_W | PTE_X | PTE_U);
+
+  release(&ptlock);
 
   swap_read(slot, (uint64)mem);
-  *pte = PA2PTE(mem) | perm | PTE_V;
-  swap_slot_free(slot);
 
+  acquire(&ptlock);
+  pte = walk(pt, va, 0);
+
+  // An unmap during disk I/O must not be undone.
+  if(pte && *pte == expected){
+    *pte = PA2PTE(mem) | perm | PTE_V;
+    swap_slot_free(slot);
+    sfence_vma();
+
+    swap_track((uint64)mem, pt, va);
+    stat_swapin++;
+
+    // Ownership has transferred to the mapping.
+    mem = 0;
+  }
+
+  release(&ptlock);
   releasesleep(&swap_lock);
 
-  sfence_vma();
-  swap_track((uint64)mem, pt, va);
-  stat_swapin++;
+  if(mem)
+    kfree(mem);
 }

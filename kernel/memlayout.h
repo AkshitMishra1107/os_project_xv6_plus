@@ -61,3 +61,8 @@
 //   TRAPFRAME (p->trapframe, used by the trampoline)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
+// Each thread gets a separate trapframe page.
+#define TFVA(t) (TRAPFRAME - (uint64)(t) * PGSIZE)
+
+// User memory must stay below the reserved trapframe pages.
+#define USERLIMIT TFVA(MAXTHREADS - 1)

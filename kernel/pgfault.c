@@ -6,23 +6,24 @@
 #include "proc.h"
 #include "defs.h"
 
+// Called without ptlock held; returns without holding it.
 int
-handle_page_fault(struct proc *p, uint64 va, int is_write)
+handle_page_fault(struct proc *p, uint64 va, int access)
 {
   pagetable_t pt = p->pagetable;
+  uint64 pageva = PGROUNDDOWN(va);
+  int is_write = (access == ACC_WRITE);
   char *mem = 0;
 
+  acquire(&ptlock);
   stat_faults++;
 
-  if(va >= p->sz)
-    return -1;
-
-  va = PGROUNDDOWN(va);
-
   for(;;){
-    push_off();
+    // Recheck the shared size after every possible allocation.
+    if(va >= p->leader->sz || va >= USERLIMIT)
+      goto bad;
 
-    pte_t *pte = walk(pt, va, 0);
+    pte_t *pte = walk(pt, pageva, 0);
 
     int lazy =
       (pte == 0) || ((*pte & (PTE_V | PTE_SWAP)) == 0);
@@ -31,69 +32,66 @@ handle_page_fault(struct proc *p, uint64 va, int is_write)
       (pte != 0) && (*pte & PTE_SWAP);
 
     int cow =
-      (pte != 0) && (*pte & PTE_V) &&
+      (pte != 0) && (*pte & PTE_V) && (*pte & PTE_U) &&
       is_write && (*pte & PTE_COW);
 
     int copy =
       cow && kref_get((void *)PTE2PA(*pte)) > 1;
 
+    // Lazy heap pages are not executable; guard pages are not user pages.
+    if((lazy && access == ACC_EXEC) ||
+       (!lazy && (*pte & PTE_U) == 0))
+      goto bad;
+
     if((lazy || swapped || copy) && mem == 0){
-      // Allocation may sleep while another page is swapped out.
-      pop_off();
+      // Allocation may sleep while swapping another page out.
+      release(&ptlock);
 
       if(swapped && nlocks_held() > 0)
         return -1;
 
       mem = kalloc_user();
-
       if(mem == 0)
         return -1;
 
-      // Allocation may have slept: inspect the entry again.
+      acquire(&ptlock);
       continue;
     }
 
-    // Case 1: restore a page from disk.
+    // Restore a swapped page without holding a spinlock.
     if(swapped){
-      pop_off();
-      swap_in(pt, va, pte, mem);
+      release(&ptlock);
+      swap_in(pt, pageva, pte, mem);
       return 0;
     }
 
-    // Case 2: first access to an untouched lazy page.
+    // First access to an untouched lazy page.
     if(lazy){
       memset(mem, 0, PGSIZE);
 
-      if(mappages(pt, va, PGSIZE, (uint64)mem,
-                  PTE_R | PTE_W | PTE_U) != 0){
-        pop_off();
-        kfree(mem);
-        return -1;
-      }
+      if(mappages(pt, pageva, PGSIZE, (uint64)mem,
+                  PTE_R | PTE_W | PTE_U) != 0)
+        goto bad;
 
-      swap_track((uint64)mem, pt, va);
+      swap_track((uint64)mem, pt, pageva);
       stat_lazy++;
 
-      pop_off();
+      release(&ptlock);
       return 0;
     }
 
-    // Case 3: write to a copy-on-write page.
+    // Write to a copy-on-write page.
     if(cow){
       uint64 pa = PTE2PA(*pte);
 
       if(kref_get((void *)pa) == 1){
-        // The page already has only one owner.
         *pte = (*pte & ~PTE_COW) | PTE_W;
-
-        swap_track(pa, pt, va);
+        swap_track(pa, pt, pageva);
         sfence_vma();
 
-        pop_off();
-
+        release(&ptlock);
         if(mem)
           kfree(mem);
-
         return 0;
       }
 
@@ -105,21 +103,30 @@ handle_page_fault(struct proc *p, uint64 va, int is_write)
       *pte = PA2PTE(mem) | flags;
 
       sfence_vma();
-      swap_track((uint64)mem, pt, va);
-
+      swap_track((uint64)mem, pt, pageva);
       kfree((void *)pa);
       stat_cow++;
 
-      pop_off();
+      release(&ptlock);
       return 0;
     }
 
-    // Invalid access or a genuinely read-only mapping.
-    pop_off();
+    // Another thread may already have repaired the mapping.
+    uint64 need = PTE_V | PTE_U |
+      (access == ACC_WRITE ? PTE_W :
+       access == ACC_EXEC ? PTE_X : PTE_R);
 
+    int ok = pte && ((*pte & need) == need);
+
+    release(&ptlock);
     if(mem)
       kfree(mem);
-
-    return -1;
+    return ok ? 0 : -1;
   }
+
+bad:
+  release(&ptlock);
+  if(mem)
+    kfree(mem);
+  return -1;
 }

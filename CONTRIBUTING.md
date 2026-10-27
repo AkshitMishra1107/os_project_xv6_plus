@@ -7,9 +7,9 @@ Both developers use this repository with their own local clone, Git identity and
 | Developer | Branch | Work |
 | --- | --- | --- |
 | Akshit | `feature/threads-sync` | v0.5–v0.9: thread-ready memory, kernel threads, futex, synchronization library and demonstrations |
-| Teammate | `feature/signals-debugger` | Tracing prototype now; v0.10–v0.13: tracing integration, signals, debugger protocol and tool |
+| Nikunj Trehan (`nikunjtrehan`) | `feature/signals-debugger` | Tracing prototype now; v0.10–v0.13: tracing integration, signals, debugger protocol and tool |
 
-The teammate has started locally and has not yet pushed a contribution. Full Part 3 integration depends on the v0.9 thread interfaces. A standalone tracing prototype may be committed and pushed now, but its PR stays draft until the thread-dependent hooks and tests are complete. Akshit must add the teammate as a collaborator with write access; the teammate accepts the invitation before pushing.
+Nikunj has pushed the standalone tracing prototype in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2). Full Part 3 integration depends on the v0.9 thread interfaces. A standalone tracing prototype may be committed and pushed now, but its PR stays draft until the thread-dependent hooks and tests are complete. Each developer uses their own GitHub account and needs write access to push to the shared repository.
 
 ```mermaid
 flowchart TD
