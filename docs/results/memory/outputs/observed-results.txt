@@ -1,0 +1,49 @@
+OBSERVED CONSOLE EXCERPTS
+These are concise transcriptions of selected captured results, not a fresh test log.
+Screenshots and checkpoint labels provide the original visible evidence.
+
+EAGER BASELINE v0.0
+Command: baseline
+baseline: sbrk(200MB) failed (expected on stock xv6)
+The historical program's wording says stock xv6; this comparison specifically uses our eager baseline.
+
+LAZY ALLOCATION v0.1
+Source: lazy-allocation.png
+baseline: sbrk(200MB) succeeded
+lazytest: OK (656 pages touched)
+
+BEFORE COW
+Source: fork-before-cow.png
+cowtest: fork failed
+forkbench: 50 forks of a 20 MB process took 38 ticks
+
+FINAL INTEGRATED MEMORY v0.4
+Sources: cow-validation.png, fork-benchmark.png, regression-tests.png
+cowtest: OK
+lazytest: OK (656 pages touched)
+forkbench: 50 forks of a 20 MB process took 6 ticks
+ALL TESTS PASSED
+
+8 MB USABLE RAM WITHOUT SWAP
+Source: no-swap-pressure.png
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+memhog: starting 12 MB workload
+memhog: child exit status -1
+
+8 MB USABLE RAM WITH SWAP
+Source: swap-pressure.png
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4369, swap ins 3072
+memhog: child exit status 0
+
+COW AND SWAP
+Source: swap-fork.png
+swapfork: child bad=0
+swapfork: OK
+
+HOTCOLD MEASURED PHASES
+Sources: fifo-hotcold.png, clock-hotcold.png
+FIFO: hotcold: swap ins 8006, swap outs 8007
+Clock: hotcold: swap ins 7691, swap outs 7684
+One recorded fresh-boot phase per policy; these precede the final pipe repair.
+Build labels follow the instructed one-CPU, 8 MB usable-RAM sequences.

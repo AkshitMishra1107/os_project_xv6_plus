@@ -15,3 +15,14 @@ mkfs
 kernel/kernel
 user/usys.S
 .gdbinit
+
+
+# Private manuals and development records retained for the final report.
+/docs/guides/
+/docs/reference/
+/docs/memory/
+/docs/threads/
+/docs/signals-debugger/
+/docs/integration/
+/project-records/
+/team-documents/

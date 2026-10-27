@@ -1,4 +1,9 @@
-# Preserve captured memory evidence byte for byte, including transcript and patch whitespace.
-docs/memory/evidence/** -text -whitespace
+* text=auto eol=lf
 *.png binary
 *.docx binary
+# Preserve recorded console output rather than normalizing its bytes.
+docs/results/**/outputs/** -text -whitespace
+# Local legacy evidence may still exist when merging older feature branches.
+docs/memory/evidence/** -text -whitespace
+docs/threads/*.txt -text -whitespace
+docs/threads/*.patch -text -whitespace
