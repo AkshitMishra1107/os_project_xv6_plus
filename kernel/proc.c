@@ -176,6 +176,8 @@ freeproc(struct proc *p)
     p->sig_handler[s] = 0;
     p->sig_restorer[s] = 0;
   }
+  p->traced = 0;
+  p->dbg_state = 0;
   p->state = UNUSED;
 }
 
@@ -348,6 +350,12 @@ reparent(struct proc *p)
   for(pp = proc; pp < &proc[NPROC]; pp++){
     if(pp->parent == p){
       pp->parent = initproc;
+      if(pp->traced){                   // do not leave a frozen child behind
+        pp->traced = 0;
+        pp->dbg_state = 0;
+        wakeup(&pp->dbg_state);
+        kill(pp->pid);
+      }
       wakeup(initproc);
     }
   }

@@ -483,6 +483,37 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
   return 0;
 }
 
+// Write into another process's memory even if the page is read-only (code).
+// Refuses pages shared with another process, because the write would be
+// visible there too.
+int
+copyout_force(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
+{
+  uint64 n, va0, pa0;
+
+  while(len > 0){
+    va0 = PGROUNDDOWN(dstva);
+    pa0 = pin_user_page(pagetable, va0, 0);   // resident, user page; returns with push_off held
+    if(pa0 == 0)
+      return -1;
+    if(kref_get((void*)pa0) != 1){
+      pop_off();
+      return -1;
+    }
+    n = PGSIZE - (dstva - va0);
+    if(n > len)
+      n = len;
+    memmove((void *)(pa0 + (dstva - va0)), src, n);
+    pop_off();
+
+    len -= n;
+    src += n;
+    dstva = va0 + PGSIZE;
+  }
+  asm volatile("fence.i");                   // the CPU must see the new instructions
+  return 0;
+}
+
 // Copy from user to kernel.
 // Copy len bytes to dst from virtual address srcva in a given page table.
 // Return 0 on success, -1 on error.

@@ -26,3 +26,9 @@
 #define SYS_sigsend   31
 #define SYS_sigreturn 32
 #define SYS_pause     33
+#define SYS_dbg_traceme 34
+#define SYS_dbg_wait    35
+#define SYS_dbg_cont    36
+#define SYS_dbg_getregs 37
+#define SYS_dbg_peek    38
+#define SYS_dbg_poke    39

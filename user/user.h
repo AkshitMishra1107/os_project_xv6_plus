@@ -30,6 +30,13 @@ int sigaction(int, uint64, uint64);
 int sigsend(int, int);
 int sigreturn(void);
 int pause(void);
+struct dbgregs;
+int dbg_traceme(void);
+int dbg_wait(int);
+int dbg_cont(int);
+int dbg_getregs(int, struct dbgregs*);
+int dbg_peek(int, uint64, void*, int);
+int dbg_poke(int, uint64, void*, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

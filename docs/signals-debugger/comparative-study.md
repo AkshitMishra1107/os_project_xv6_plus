@@ -91,7 +91,8 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 | **v0.10** | Memory Regression | `lazytest`, `cowtest`, `forkbench` pass | N/A (baseline xv6 lacks memory extensions) | ✅ **PASS:** 656 lazy pages, COW OK, 6 ticks forkbench | `05-regression-lazy-cow-forkbench.png` |
 | **v0.11** | `sigtest` (5 subtests) | `1 ok`, `2 ok`, `3 ok`, `4 ok`, `5 ok`, `ALL OK` | `exec sigtest failed` | ✅ **PASS:** Verified signal to self, inter-process signal waking `pause()`, default termination, ignored signal (`SIG_IGN`), and sleep interruption | `v011-signals-session.txt` & `06-signals-sigtest.png` |
 | **v0.11** | Baseline Comparison | Side-by-side run of signal operations | `exec sigtest failed` (no signal infrastructure) | Complete POSIX signal model with register-safe restorer | `07-signals-vs-baseline.png` |
-| **v0.12** | `dbgmini` | Reason 1 (exec stop) → reason 3 (exited) | Command not found | *(Pending v0.12 run)* | `v012-dbgmini-session.txt` |
+| **v0.12** | `dbgmini` | Reason 1 (exec stop) → reason 3 (exited) | `exec dbgmini failed` | ✅ **PASS:** Verified `dbg_traceme()`, `dbg_wait()` (reason 1 DBG_EXEC), `dbg_getregs()`, `dbg_peek()`, and `dbg_cont()` (reason 3 DBG_EXITED) | `v012-dbgmini-session.txt` & `08-debugger-kernel-dbgmini.png` |
+| **v0.12** | Baseline Comparison | In-kernel process inspection & control primitives | `exec dbgmini failed` (no debugger syscalls) | Full kernel debugger foundation (`copyout_force`, `dbg_stop`, cause 3 `ebreak`) | `09-debugger-vs-baseline.png` |
 | **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | Crashes with scause 3 | *(Pending v0.13 run)* | `v013-dbg-session.txt` |
 | **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | *(Pending v1.0 run)* | `v10-finaldemo-session.txt` |
 
@@ -132,4 +133,22 @@ All 5 comprehensive test cases passing consistently across multiple runs, verify
 ### 6.2 Architectural Comparison: Signals in Stock xv6 vs. xv6-Plus
 Side-by-side terminal session highlighting the fundamental architectural gap between stock MIT xv6 (which lacks any asynchronous signal infrastructure or user handlers) and xv6-Plus's complete POSIX signal framework.
 ![Signals Baseline vs xv6-Plus](evidence/07-signals-vs-baseline.png)
+
+---
+
+## 7. Visual Evidence Gallery (Milestone v0.12 — Debugger Kernel Support)
+
+### 7.1 Debugger Kernel Primitives Verification (`dbgmini`)
+Verification of the 6 fundamental in-kernel debugger primitives:
+1. `dbg_traceme()`: Child process opts in to parent supervision.
+2. `dbg_wait()`: Parent sleeps on `wait_lock` until child halts at `DBG_EXEC` (reason 1).
+3. `dbg_getregs()`: Extract child's registers (`pc`, `sp`, `fp`, `a0`–`a7`).
+4. `dbg_peek()`: Read instruction bytes directly at target `pc`.
+5. `dbg_cont()`: Resume child execution and verify child completes and outputs.
+6. `DBG_EXITED` (reason 3): Parent notified of target exit.
+![Debugger Kernel Dbgmini Verification](evidence/08-debugger-kernel-dbgmini.png)
+
+### 7.2 Architectural Comparison: Debugger Primitives in Stock xv6 vs. xv6-Plus
+Stock xv6 has zero support for process introspection or control: attempting to run `dbgmini` fails with command missing, text pages are write-protected against breakpoint insertion, and breakpoint instructions (`ebreak`) kill processes unhandled. xv6-Plus provides full in-kernel debugger support with `copyout_force()` and non-fatal cause 3 handling.
+![Debugger Baseline vs xv6-Plus](evidence/09-debugger-vs-baseline.png)
 

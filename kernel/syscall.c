@@ -107,6 +107,12 @@ extern uint64 sys_sigaction(void);
 extern uint64 sys_sigsend(void);
 extern uint64 sys_sigreturn(void);
 extern uint64 sys_pause(void);
+extern uint64 sys_dbg_traceme(void);
+extern uint64 sys_dbg_wait(void);
+extern uint64 sys_dbg_cont(void);
+extern uint64 sys_dbg_getregs(void);
+extern uint64 sys_dbg_peek(void);
+extern uint64 sys_dbg_poke(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -138,6 +144,12 @@ static uint64 (*syscalls[])(void) = {
 [SYS_sigsend]   sys_sigsend,
 [SYS_sigreturn] sys_sigreturn,
 [SYS_pause]     sys_pause,
+[SYS_dbg_traceme] sys_dbg_traceme,
+[SYS_dbg_wait]    sys_dbg_wait,
+[SYS_dbg_cont]    sys_dbg_cont,
+[SYS_dbg_getregs] sys_dbg_getregs,
+[SYS_dbg_peek]    sys_dbg_peek,
+[SYS_dbg_poke]    sys_dbg_poke,
 };
 
 static char *syscall_names[] = {
@@ -168,6 +180,12 @@ static char *syscall_names[] = {
 [SYS_sigsend]        "sigsend",
 [SYS_sigreturn]      "sigreturn",
 [SYS_pause]          "pause",
+[SYS_dbg_traceme]    "dbg_traceme",
+[SYS_dbg_wait]       "dbg_wait",
+[SYS_dbg_cont]       "dbg_cont",
+[SYS_dbg_getregs]    "dbg_getregs",
+[SYS_dbg_peek]       "dbg_peek",
+[SYS_dbg_poke]       "dbg_poke",
 };
 
 void

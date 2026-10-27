@@ -112,4 +112,6 @@ struct proc {
   uint64 sig_restorer[NSIG];   // user function that calls sigreturn
   struct trapframe sig_saved;  // the interrupted registers while a handler runs
   int in_handler;              // 1 while a handler runs
+  int traced;                  // 1 if the parent is allowed to control this process
+  int dbg_state;               // 0 running; otherwise the reason it is stopped
 };
