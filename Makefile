@@ -164,6 +164,7 @@ UPROGS=\
 	$U/_dbgmini\
 	$U/_dbg\
 	$U/_dbgtarget\
+	$U/_finaldemo\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

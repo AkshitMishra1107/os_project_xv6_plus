@@ -95,7 +95,8 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 | **v0.12** | Baseline Comparison | In-kernel process inspection & control primitives | `exec dbgmini failed` (no debugger syscalls) | Full kernel debugger foundation (`copyout_force`, `dbg_stop`, cause 3 `ebreak`) | `09-debugger-vs-baseline.png` |
 | **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | `exec dbg failed` | ✅ **PASS:** Full interactive debugging: breakpoints hit in sequence (`middle`, `inner`), symbolized frame unwinding (`bt`), step-over breakpoint restoration, output `outer(5) = 12` | `v013-dbg-session.txt` & `10-dbg-tool-session.png` |
 | **v0.13** | Symbolized Backtraces | Call stack unwinding with ELF symbol translation | Crashes with scause 3 (no frame walking) | Stack unwinding across active call hierarchy (`#0` through `#5`) | `11-dbg-symbolized-backtrace.png` |
-| **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | *(Pending v1.0 run)* | `v10-finaldemo-session.txt` |
+| **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | ✅ **PASS:** Multi-threaded stress touched 1536 pages, signal 10 delivered asynchronously, 1536 lazy page faults handled seamlessly | `v10-finaldemo-session.txt` & `12-final-integration-finaldemo.png` |
+| **v1.0** | Whole System Regression | All suites pass (`lazytest`, `cowtest`, `forkbench`, `sigtest`, `dbgmini`, `dbg`, `finaldemo`) | Baseline lacks features | ✅ **PASS:** 100% test pass rate across all Part 1, Part 2, and Part 3 integrated subsystems | `13-full-system-summary.png` |
 
 *(This log is updated dynamically as each milestone is executed and verified.)*
 
@@ -175,3 +176,25 @@ Verification of call stack unwinding via RISC-V frame pointers (`fp - 8` return 
 5. Frame `#4`–`#5`: Runtime allocator frames
 ![Symbolized Backtrace](evidence/11-dbg-symbolized-backtrace.png)
 
+---
+
+## 9. Visual Evidence Gallery (Milestone v1.0 — Final Integration & Verification)
+
+### 9.1 Final Multi-Subsystem Integration Demo (`finaldemo`)
+Simultaneous end-to-end stress test combining Part 1 (Lazy Page Allocation), Part 2 (Kernel Threading & Synchronization Mutexes), and Part 3 (Asynchronous POSIX Signals):
+- 3 threads concurrently touch a total of 1,536 lazily allocated virtual memory pages.
+- Asynchronous signal 10 (`SIGUSR1`) is generated, delivered, and handled across execution boundaries without corruption.
+- Verified kernel memory counters report 1,536 lazy allocations and 1,538 total demand-paging page faults.
+![Final Integration Demo](evidence/12-final-integration-finaldemo.png)
+
+### 9.2 Complete System Regression & Verification Suite Summary
+Full automated regression pass confirming zero regressions across all 15 project milestones:
+1. Lazy Page Allocation (`lazytest`): All tests pass
+2. Copy-on-Write Fork (`cowtest`): All tests pass
+3. Fork Throughput Benchmark (`forkbench`): 6 ticks
+4. Dynamic System Call Tracing (`trace`): All filters and fork inheritance verified
+5. POSIX Signal Infrastructure (`sigtest`): All 5 subtests pass
+6. In-Kernel Debugger Primitives (`dbgmini`): All 6 lifecycle states verified
+7. Native Debugger CLI Tool (`dbg`): Breakpoints, symbols, step-over, backtraces verified
+8. Multi-Subsystem Integration (`finaldemo`): All subsystems operate seamlessly in unison
+![Full System Summary](evidence/13-full-system-summary.png)
