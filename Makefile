@@ -162,6 +162,8 @@ UPROGS=\
 	$U/_trace\
 	$U/_sigtest\
 	$U/_dbgmini\
+	$U/_dbg\
+	$U/_dbgtarget\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

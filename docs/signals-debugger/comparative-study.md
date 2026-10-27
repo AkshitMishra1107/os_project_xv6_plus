@@ -93,7 +93,8 @@ Stock xv6 provides a clean educational UNIX-like kernel, but lacks observability
 | **v0.11** | Baseline Comparison | Side-by-side run of signal operations | `exec sigtest failed` (no signal infrastructure) | Complete POSIX signal model with register-safe restorer | `07-signals-vs-baseline.png` |
 | **v0.12** | `dbgmini` | Reason 1 (exec stop) → reason 3 (exited) | `exec dbgmini failed` | ✅ **PASS:** Verified `dbg_traceme()`, `dbg_wait()` (reason 1 DBG_EXEC), `dbg_getregs()`, `dbg_peek()`, and `dbg_cont()` (reason 3 DBG_EXITED) | `v012-dbgmini-session.txt` & `08-debugger-kernel-dbgmini.png` |
 | **v0.12** | Baseline Comparison | In-kernel process inspection & control primitives | `exec dbgmini failed` (no debugger syscalls) | Full kernel debugger foundation (`copyout_force`, `dbg_stop`, cause 3 `ebreak`) | `09-debugger-vs-baseline.png` |
-| **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | Crashes with scause 3 | *(Pending v0.13 run)* | `v013-dbg-session.txt` |
+| **v0.13** | `dbg dbgtarget` | Breakpoints hit at `middle` & `inner`, symbolized `bt`, result `12` | `exec dbg failed` | ✅ **PASS:** Full interactive debugging: breakpoints hit in sequence (`middle`, `inner`), symbolized frame unwinding (`bt`), step-over breakpoint restoration, output `outer(5) = 12` | `v013-dbg-session.txt` & `10-dbg-tool-session.png` |
+| **v0.13** | Symbolized Backtraces | Call stack unwinding with ELF symbol translation | Crashes with scause 3 (no frame walking) | Stack unwinding across active call hierarchy (`#0` through `#5`) | `11-dbg-symbolized-backtrace.png` |
 | **v1.0** | `finaldemo` | 3 threads touched 1536 pages, signal 10 received | Fails (missing features) | *(Pending v1.0 run)* | `v10-finaldemo-session.txt` |
 
 *(This log is updated dynamically as each milestone is executed and verified.)*
@@ -151,4 +152,26 @@ Verification of the 6 fundamental in-kernel debugger primitives:
 ### 7.2 Architectural Comparison: Debugger Primitives in Stock xv6 vs. xv6-Plus
 Stock xv6 has zero support for process introspection or control: attempting to run `dbgmini` fails with command missing, text pages are write-protected against breakpoint insertion, and breakpoint instructions (`ebreak`) kill processes unhandled. xv6-Plus provides full in-kernel debugger support with `copyout_force()` and non-fatal cause 3 handling.
 ![Debugger Baseline vs xv6-Plus](evidence/09-debugger-vs-baseline.png)
+
+---
+
+## 8. Visual Evidence Gallery (Milestone v0.13 — The `dbg` Tool)
+
+### 8.1 Interactive Debugger Tool Workflow (`dbg dbgtarget`)
+Full interactive debugging session demonstrating:
+1. Dynamic ELF `.symtab` symbol loading for symbol-to-address resolution.
+2. Software breakpoint injection (`break inner`, `break middle`) using RISC-V 32-bit `ebreak` and 16-bit compressed `c.ebreak`.
+3. Program execution interception at `middle` function entry.
+4. Single-step breakpoint bypass: restoration of original instruction bytes, temporary step breakpoint injection, and re-arming of original breakpoint.
+5. Clean execution to program completion yielding verified calculation result: `dbgtarget: outer(5) = 12`.
+![Debugger Tool Session](evidence/10-dbg-tool-session.png)
+
+### 8.2 Symbolized Call Stack Backtrace (`bt`)
+Verification of call stack unwinding via RISC-V frame pointers (`fp - 8` return address, `fp - 16` caller frame pointer):
+1. Frame `#0`: Active function (`middle + 0` / `inner + 0`)
+2. Frame `#1`: Caller function (`outer + 12` / `middle + 12`)
+3. Frame `#2`: Main function (`main + 14` / `outer + 12`)
+4. Frame `#3`: Entry wrapper (`start + 12`)
+5. Frame `#4`–`#5`: Runtime allocator frames
+![Symbolized Backtrace](evidence/11-dbg-symbolized-backtrace.png)
 
