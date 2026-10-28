@@ -56,4 +56,16 @@ sequenceDiagram
 
 Prefaulting happens before the bucket spinlock. The expected-value check and transition to sleep share the lock used by wake, avoiding the check-to-sleep lost-wakeup window. Invalid or unaligned wait addresses return -1; a value mismatch returns immediately. Callers must keep the word allocated while waiters exist and loop around their actual predicate. Waking is not ownership transfer or a promise that the predicate remains true.
 
-Syscall numbers 23–28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
+Syscall numbers 23â€“28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
+
+## User library (v0.8)
+
+Include `user/thread.h`. `thread_create(function, argument)` allocates a 16 KB stack; return from the function or `thread_exit()` ends the worker. `thread_join(tid)` waits and frees its stack. `thread_self()` returns the group-local TID. Use library joins for library-created threads, and raw joins for raw-created threads; do not mix ownership.
+
+Stack allocation and metadata are serialized internally, including concurrent nested create/join. Join caches the old allocation before sleeping so a reused kernel TID cannot cause the new thread's stack to be freed. A duplicate concurrent join is rejected. This does not make application calls to `malloc/free` thread-safe; those calls must be serialized separately from thread-library allocation, or confined to setup before workers start.
+
+`mutex_t` uses atomic states 0 (free), 1 (locked) and 2 (contended). An uncontended lock/unlock stays in user space; contended callers sleep on a futex. `cond_wait` snapshots a sequence while holding the mutex, unlocks, waits only if that sequence is unchanged, then relocks. Always test the application predicate in a `while` loop. Both signal and broadcast currently wake all matching waiters. `sem_t` combines a mutex, condition and nonnegative initial permit count. Locks are nonrecursive and provide no fairness guarantee.
+
+Before the first SMP worker starts, inherited writable COW pages are made private while the process is still single-threaded. This also prevents a worker from reading an old COW frame through a remote cached translation. No general inter-CPU TLB shootdown is claimed.
+
+After `fork()` from a multi-threaded program, the child should exec or exit before using the user thread library: copied user-space lock state may describe a lock held by a parent thread. Do not reuse a TID after its successful join as a persistent identity.

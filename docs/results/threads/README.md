@@ -9,10 +9,14 @@ Configuration: QEMU, three CPUs, 128 MB, FIFO setting. Eviction is disabled in S
 - Full `usertests`: `ALL TESTS PASSED`.
 - Final `memstat`: 32,304 free pages, zero swap slots. This is a snapshot, not a proof about every possible workload.
 
-[First lifecycle outputs](outputs/v06-lifecycle.txt) Â· [Full regression output](outputs/v06-usertests.txt)
+[First lifecycle outputs](outputs/v06-lifecycle.txt) Ã‚Â· [Full regression output](outputs/v06-usertests.txt)
 
 The private run metadata records the parent commit and working source diff because the tests precede the milestone commit. Reproduce from this milestone with a clean build: `make clean && make qemu CPUS=3 RAM_MB=128 SWAP_POLICY=1`, then run `kthreadtest`, `threadlife`, `usertests` and `memstat` at the xv6 prompt.
 
 ## v0.7 futexes
 
 Same three-CPU, 128 MB configuration. `futextest` passed 10/10 runs: 2,000 total handshakes, mismatch returns, invalid addresses, colliding-bucket isolation, cross-process isolation, and group-kill cleanup. The raw thread/lifecycle tests, `lazytest` and `cowtest` also passed. [Selected actual outputs](outputs/v07-futex.txt).
+
+## v0.8 library
+
+Three CPUs, 128 MB. `threadtest` and `libtest` each passed 10/10 runs. Each library run performs 60 nested create/join pairs, a 3,000-increment mutex check, a condition-variable barrier and a semaphore capacity check. Both returning from a worker and explicit thread exit are exercised. Final focused raw thread/futex/lifecycle checks passed. Free pages were 32,300 before and after; swap slots stayed zero. [Selected actual outputs](outputs/v08-library.txt).

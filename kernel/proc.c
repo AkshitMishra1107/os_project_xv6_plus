@@ -436,6 +436,28 @@ kthread_create(uint64 fn, uint64 arg, uint64 sp, uint64 stub)
   struct proc *p = myproc(), *l = p->leader, *np;
   if((fn & 1) || (stub & 1) || (sp & 15) || sp == 0)
     return -1;
+#if XV6_CPUS > 1
+  // A process may have inherited COW mappings before creating its first
+  // worker. Resolve them while it is still alone: later remapping would
+  // leave another CPU reading the old physical page through a stale TLB.
+  acquire(&wait_lock);
+  int single = l->nthreads == 1;
+  release(&wait_lock);
+  if(single){
+    acquire(&ptlock);
+    uint64 sz = l->sz;
+    release(&ptlock);
+    for(uint64 va = 0; va < sz; va += PGSIZE){
+      acquire(&ptlock);
+      pte_t *pte = walk(l->pagetable, va, 0);
+      int cow = pte && (*pte & (PTE_V | PTE_U | PTE_COW)) ==
+                              (PTE_V | PTE_U | PTE_COW);
+      release(&ptlock);
+      if(cow && handle_page_fault(p, va, ACC_WRITE) < 0)
+        return -1;
+    }
+  }
+#endif
   prefault(sp - 1, 1, 1);
   acquire(&wait_lock);
   if(l->exiting){
