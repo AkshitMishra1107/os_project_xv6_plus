@@ -1,6 +1,6 @@
 # Thread ready memory preparation
 
-Milestone v0.5 prepares the existing memory subsystem for the later thread implementation. Its planned one-CPU regression and pressure checks have passed on the working candidate. Main-branch integration and the release tag are still pending. Runnable thread support is part of the later milestones.
+Milestone v0.5 prepares the existing memory subsystem for the later thread implementation. Its one-CPU regression and pressure checks passed on the recorded candidate. PR #3 now integrates this prerequisite into main; runnable thread support follows in the integrated v0.6-v0.9 milestones. The observations on this page describe the original v0.5 checkpoint.
 
 ## Before and after
 
@@ -41,3 +41,5 @@ Successful pinning returns with ptlock held, and the copy caller releases it aft
 The normal 128 MB FIFO build passed baseline, lazytest, cowtest, forkbench and the full unchanged usertests suite. One-CPU 8 MB builds under both FIFO and Clock passed a 4 MB control, two 12 MB workloads and swapfork. See the [results and selected evidence](../results/thread-ready-memory/README.md).
 
 These checks establish compatibility in the tested configurations. They do not exercise concurrent threads, and swapping remains supported with one CPU. Thread creation, futexes, synchronization primitives and thread lifecycle integration remain later work. Cross-CPU TLB invalidation is not added by this milestone.
+
+The v0.5 prerequisite is now integrated through PR #3. See [main validation](../results/threads/integration.md) for the later source-equivalence and runtime checks.

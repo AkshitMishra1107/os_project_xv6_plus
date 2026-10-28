@@ -29,3 +29,6 @@ user/usys.S
 
 # Editor recovery files stay local.
 *.swp
+
+# Nano emergency recovery copies are archived privately.
+/kernel/*.save

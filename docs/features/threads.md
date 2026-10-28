@@ -56,7 +56,7 @@ sequenceDiagram
 
 Prefaulting happens before the bucket spinlock. The expected-value check and transition to sleep share the lock used by wake, avoiding the check-to-sleep lost-wakeup window. Invalid or unaligned wait addresses return -1; a value mismatch returns immediately. Callers must keep the word allocated while waiters exist and loop around their actual predicate. Waking is not ownership transfer or a promise that the predicate remains true.
 
-Syscall numbers 23Ã¢â‚¬â€œ28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
+Syscall numbers 23–28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
 
 ## User library (v0.8)
 

@@ -14,3 +14,4 @@ These files are unchanged copies of the original captured screenshots. The origi
 | [fifo-hotcold.png](fifo-hotcold.png) | `31-fifo-hotcold-results.png` | Recorded FIFO hot/cold measured phase |
 | [clock-hotcold.png](clock-hotcold.png) | `32-clock-hotcold-results-and-command-retry.png` | Recorded Clock hot/cold measured phase; unrelated command retry is visible |
 | [regression-tests.png](regression-tests.png) | `38-v0.4-full-usertests-pass-and-memstat.png` | Final full regression pass and memstat after the pipe repair |
+| [memstat-observation.png](memstat-observation.png) | `20-v0.3-memstat-results.png` | v0.3 cumulative counters and free-page recovery |

@@ -1,38 +1,45 @@
 # xv6 Plus
 
-We extended MIT's RISC-V teaching operating system with **lazy memory allocation, copy-on-write fork, memory statistics, disk swapping with FIFO and Clock replacement, and shared-memory threads with futex-based synchronization**.
+An educational extension of MIT's RISC-V teaching operating system with **lazy allocation, copy-on-write fork, memory statistics, FIFO/Clock disk swapping, and threads with futex-based synchronization**.
 
-The tagged memory release is [`v0.4`](https://github.com/AkshitMishra1107/os_project_xv6_plus/tree/v0.4) (`93fa86d`). On this implementation branch, **v0.5–v0.9 code is implemented and tested, with review, main-branch integration and release tags pending**. [PR #3](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/3) contains the v0.5 prerequisite; `feature/threads-implementation` adds the later milestones. Nikunj’s tracing work stays separate in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2).
+The memory milestones and v0.5–v0.9 thread foundation are integrated into `main`. The historical memory-only release is [`v0.4`](https://github.com/AkshitMishra1107/os_project_xv6_plus/tree/v0.4); the integrated foundation is [`v0.9`](https://github.com/AkshitMishra1107/os_project_xv6_plus/tree/v0.9). Nikunj's tracing work remains separate in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2); signals and debugger completion are not claimed here.
 
-## What we added
+## Start here
 
-The baseline below is **our verified eager-allocation checkpoint `v0.0`**. It is not a claim about every version of upstream xv6.
+- [Memory report draft for teacher discussion](docs/reports/memory-management-draft.docx): implementation, diagrams, original evidence, limits, references and viva preparation.
+- [What to present to the teacher](docs/presentation/memory.md): commands, evidence checklist and explanations.
+- [MIT labs and other primary references](docs/references.md): direct lab links and how they relate to this project.
+- [Memory mechanisms and source map](docs/features/memory.md) · [memory comparisons and original screenshots](docs/results/memory/README.md).
+- [Thread architecture and synchronization](docs/features/threads.md) · [executed thread validation](docs/results/threads/README.md).
 
-| Feature | Before our change | What the extension enables |
-| --- | --- | --- |
-| Lazy allocation | A 200 MB eager allocation failed | Reserve the address range first; allocate and zero pages when accessed. Sparse test: 656 pages touched successfully. |
-| Copy-on-write fork | Fork copied resident user pages; the large-process fork test failed | Share pages until a write requires a private copy. `cowtest` passes. |
-| Memory statistics | Our baseline had no `memstat` interface | Inspect faults, lazy allocations, actual COW copies, free pages and swap activity. |
-| Disk swapping | The 12 MB workload failed with 8 MB usable RAM | Verify all 3,072 workload pages with zero bad pages by moving pages between RAM and a 16 MB swap area. |
-| FIFO and Clock | No page replacement in our baseline | Choose a replacement policy and compare its swap activity on the same workload. |
-| Threads | Separate process address spaces | Up to eight members share a PID, heap and page table, with individual trapframes and stacks. |
-| Futex and synchronization library | No corresponding API in our baseline | Contended mutexes sleep; condition variables coordinate predicates; semaphores limit concurrent users. |
+## What changed
 
-Read [memory mechanisms and code](docs/features/memory.md) and [memory comparison evidence](docs/results/memory/README.md). The [thread architecture and synchronization diagrams](docs/features/threads.md) and [executed thread validation](docs/results/threads/README.md) explain the newer additions.
+The comparison baseline is **our eager checkpoint `v0.0`**, based on historical upstream `c4de4b0`. Newer upstream xv6 already contains lazy allocation. These are educational implementation and integration results, not claims of new algorithms or an MIT lab grading pass.
 
-## Measured results
+| Feature | Earlier project behavior | Added functionality |
+|---|---|---|
+| Lazy allocation | A 200 MiB eager request failed | Reserve virtual space first; allocate zeroed pages when used. The sparse test reports 656 write-touched pages. |
+| Copy-on-write fork | Fork copied resident data; the 80 MiB fork test failed | Share protected frames until private writes are needed; the custom isolation test passes. |
+| Memory statistics | No project memstat API | Observe handler calls, allocations, COW copies, free pages and swap activity. |
+| FIFO and Clock swap | A 12 MiB workload failed under an 8 MiB usable-RAM limit | Check all 3072 pages with zero bad pages using a fixed 16 MiB disk area. |
+| Threads | Separate process address spaces | Up to eight members share a PID, page table and heap, with separate trapframes and stacks. |
+| Synchronization | No corresponding project API | Futex-backed mutexes, condition variables and semaphores coordinate shared work. |
 
-| Experiment | Recorded observation |
-| --- | --- |
-| 50 forks of a 20 MB process | 38 ticks before COW; 3â€“4 ticks in COW-only runs; 6 ticks in the final integrated v0.4 run. These are separate observations. |
-| 12 MB pressure workload with 8 MB usable RAM | Failed without swap; passed with swap, including three repeated runs. |
-| Final memory regression | Full `usertests`: `ALL TESTS PASSED` after the pipe-copy repair. |
+## Recorded results
 
-These are recorded experiments, not general performance guarantees. [Configurations and limits](docs/results/memory/README.md#measurement-limits) accompany the results.
+| Experiment | Observed result |
+|---|---|
+| 50 fork/wait cycles with 20 MiB touched | 38 ticks before COW; 3–4 in separate COW-only observations; 6 in the historical integrated memory run. These are not controlled averages. |
+| 12 MiB pressure with 8 MiB usable xv6 RAM | Failed before swap; passed with swap and repeated correctness checks. |
+| Full regression on later integrated source | usertests passed with one and three CPUs. |
+| Thread stress | Ten SMP rounds passed; free pages stayed at 32300 and slots at zero after every round. |
+| Shared-thread swap pressure | Four workers checked 12 MiB with zero bad pages in ten FIFO and three Clock runs. |
 
-## Build and try the memory release
+Historical measurements, exact configurations, source hashes and limits are linked from the result pages. Remaining occupied swap slots were stable in the recorded pressure sequences; their owners have not been traced. The timing results do not establish proportional speedup or a universal policy winner.
 
-Use Ubuntu or WSL2 with Git, make, a RISC-V GCC/binutils toolchain, QEMU RISC-V and Perl.
+## Build and try
+
+Use Ubuntu/WSL2 with Git, make, RISC-V GCC/binutils, QEMU RISC-V and Perl.
 
 ```bash
 git clone https://github.com/AkshitMishra1107/os_project_xv6_plus.git xv6-plus
@@ -41,54 +48,32 @@ make clean
 make qemu CPUS=1 RAM_MB=128 SWAP_POLICY=1
 ```
 
-At the xv6 `$` prompt, run these individually:
+At the xv6 prompt, run `memstat`, `baseline`, `lazytest`, `cowtest`, `forkbench` and `usertests` individually. Exit QEMU with Ctrl+A then X.
 
-```text
-baseline
-lazytest
-cowtest
-forkbench
-memstat
-usertests
-```
+For swap pressure, rebuild clean with `CPUS=1 RAM_MB=8 SWAP_POLICY=1`, then run `memhog 4`, `memhog 12`, `swapfork`, `threadswap` and `memstat`. Policy 1 is FIFO; 2 is Clock. QEMU is provisioned with 128 MiB; RAM_MB limits the memory managed by xv6. **Swapping is supported with one CPU.**
 
-Exit QEMU with **Ctrl+A, then X**. To try swapping, rebuild with `RAM_MB=8` and run `memhog 4`, `memhog 12`, `swapfork`, then `memstat`. Policy `1` is FIFO; `2` is Clock. Run `make clean` before changing configuration. Swapping is supported with **one CPU**. QEMU supplies 128 MB; `RAM_MB` limits the memory xv6 uses.
-
-## Try the thread implementation
-
-```bash
-git fetch origin
-git switch feature/threads-implementation
-make clean
-make qemu CPUS=3 RAM_MB=128 SWAP_POLICY=1
-```
-
-Run `threadtest`, `racetest`, `prodcons`, `philosophers`, `semtest`, `exittest`, `threadmem`, and `usertests` individually at the xv6 prompt. Three-CPU stress checks passed ten rounds and full usertests passed on one and three CPUs. One-CPU FIFO and Clock pressure tests also passed with four workers verifying a shared 12 MB region. [Exact configurations and recorded outputs](docs/results/threads/README.md) include timing limits and memory snapshots. Eviction is disabled in SMP builds; swapping remains supported with one CPU.
+For parallel thread demonstrations, rebuild clean with `CPUS=3 RAM_MB=128 SWAP_POLICY=1`. Run `threadtest`, `racetest`, `prodcons`, `philosophers`, `semtest`, `exittest`, and `threadmem`. Eviction is disabled in SMP builds. Always clean before changing CPU count, RAM limit or policy.
 
 ## Repository layout
 
 ```text
-kernel/                  Operating-system implementation
-user/                    User commands and executable tests
-mkfs/                    Filesystem image builder
-docs/features/           Feature explanations, diagrams and code links
-docs/results/            Selected per-feature measurements, outputs and screenshots
-CONTRIBUTING.md          Team branches, commits, tests and pull requests
+kernel/               Operating-system implementation
+user/                 Commands, library and executable tests
+mkfs/                 Filesystem image builder
+docs/features/        Mechanisms, diagrams and source links
+docs/results/         Selected outputs, screenshots and validation records
+docs/reports/         Teacher-facing draft report
+docs/presentation/    Demonstration and evidence guide
+docs/references.md    Primary references and attribution
+CONTRIBUTING.md       Team integration and contribution workflow
 ```
 
-Kernel and user source stay in their build-compatible locations. Large implementation manuals, editor screenshots, raw development logs and intermediate patches are retained locally for the report, rather than repeated in the public documentation.
+Source stays in its build-compatible locations. Large manuals, editor recovery files, raw repeated logs and intermediate patches are preserved in the local report archive instead of the public presentation.
 
-The [v0.5 preparation](docs/features/thread-ready-memory.md) and its [candidate validation results](docs/results/thread-ready-memory/README.md) are documented separately from the earlier memory release.
+## Attribution and progress
 
-## Contributions and next features
+MIT provides xv6 and its original history; the [license](LICENSE) and plain [upstream README](README) are retained. Lazy allocation and COW correspond to established MIT labs. Our memstat interface and combined swap/replacement experiments extend the project beyond those individual exercises; see the [reference map](docs/references.md).
 
-Akshit implemented the memory, thread and synchronization milestones. `feature/threads-sync` holds the v0.5 prerequisite; `feature/threads-implementation` preserves the tested v0.6–v0.9 commits while review proceeds. Nikunj Trehan (`nikunjtrehan`) has pushed a tracing prototype on `feature/signals-debugger`; signals and debugger work remain planned, and final tracing integration depends on the thread foundation. Completed contributions will be linked to their commits, pull requests and test evidence. See [the team workflow](CONTRIBUTING.md) before the first teammate commit.
+Akshit completed the memory and thread/synchronization foundation. [PR #3](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/3) and [PR #4](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/4) are merged with their commits preserved. Nikunj continues on `feature/signals-debugger`. Read [the team workflow](CONTRIBUTING.md) before integrating shared kernel changes.
 
-| Milestone | State |
-| --- | --- |
-| v0.1 lazy allocation through v0.4 memory and swap | Implemented and validated |
-| v0.5 thread-ready memory | Implemented and tested; PR #3 review, integration and tag pending |
-| v0.6 through v0.9 threads and synchronization | Implemented, tested and committed on the implementation branch; review, integration and tag pending |
-| v0.10 tracing through v0.13 debugger tool | Tracing prototype pushed in draft PR #2; thread integration, signals and debugger still pending |
-
-[Compare our memory changes](https://github.com/AkshitMishra1107/os_project_xv6_plus/compare/v0.0...v0.4). The original MIT history and [license](LICENSE) are preserved. The plain [upstream README](README) is also retained because the filesystem-image recipe uses it.
+[Compare historical memory work](https://github.com/AkshitMishra1107/os_project_xv6_plus/compare/v0.0...v0.4) · [Integrated validation](docs/results/threads/integration.md)
