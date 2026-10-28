@@ -97,3 +97,21 @@ Documents the course-specific xv6-labs-2020 starter repository and explains its 
 This is an educational implementation and integration on MIT xv6, using the supplied project guides with assisted development and debugging. The contribution is the project code, combined subsystem behavior, test design, recorded repairs and evidence. The techniques are established. References were added during the draft review; no audit establishing code lineage from unrelated student solution repositories is claimed.
 
 Use official repositories and course pages for provenance. Preserve the original LICENSE. Keep historical v0.0/v0.4 comparisons distinct from current main and do not label custom tests as official MIT grading results.
+
+## Research papers and their role
+
+These are literature references added during the comparison revision. They provide conceptual context; this project does not claim to reproduce their experiments or implement an exact working-set scheduler.
+
+### R14 Denning 1968 The working set model for program behavior
+
+[Denning 1968 The working set model for program behavior](https://doi.org/10.1145/363095.363141)
+
+Peter J. Denning. Communications of the ACM 11(5), 323-333, May 1968. DOI 10.1145/363095.363141. Research background for locality and the pages actively used by a computation. The full author-hosted paper was checked. Our sparse and hot/cold tests are illustrations of access patterns; the project does not implement Denning's working-set scheduler.
+
+### R15 Belady, Nelson and Shedler 1969 An anomaly in space-time characteristics of certain programs running in a paging machine
+
+[Belady, Nelson and Shedler 1969 An anomaly in space-time characteristics of certain programs running in a paging machine](https://research.ibm.com/publications/an-anomaly-in-space-time-characteristics-of-certain-programs-running-in-a-paging-machine)
+
+L. A. Belady, R. A. Nelson and G. S. Shedler. Communications of the ACM, June 1969. Publisher DOI 10.1145/363011.363155 is linked by the IBM Research record. The primary record and abstract were checked; the ACM full text was unavailable through the research tool. It provides historical context for FIFO policy anomalies. Our experiments do not reproduce that paper's anomaly experiment.
+
+The Word report now links each of its 12 exact code excerpts to a specific commit and line range, separately from these external references. The implementation evidence is the project source and captured output; the papers explain established ideas.
