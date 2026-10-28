@@ -564,3 +564,58 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 
   return got_null ? 0 : -1;
 }
+
+
+// A threaded parent's CPUs may retain writable TLB entries. Copy privately
+// rather than write-protecting its mappings without a TLB shootdown protocol.
+int
+uvmcopy_private(pagetable_t old, pagetable_t new, uint64 sz)
+{
+  uint64 i;
+  char *mem = 0;
+  for(i = 0; i < sz; i += PGSIZE){
+    mem = 0;
+    for(;;){
+      acquire(&ptlock);
+      pte_t *pte = walk(old, i, 0);
+      if(pte && (*pte & PTE_SWAP)){
+        release(&ptlock);
+        if(handle_page_fault(myproc(), i, ACC_READ) < 0)
+          goto fail;
+        continue;
+      }
+      if(pte == 0 || !(*pte & PTE_V)){
+        release(&ptlock);
+        if(mem)
+          kfree(mem);
+        mem = 0;
+        break;
+      }
+      if(mem == 0){
+        release(&ptlock);
+        mem = kalloc_user();
+        if(mem == 0)
+          goto fail;
+        continue;
+      }
+      memmove(mem, (void *)PTE2PA(*pte), PGSIZE);
+      uint flags = PTE_FLAGS(*pte) & ~PTE_COW;
+      if(*pte & PTE_COW)
+        flags |= PTE_W;
+      if(mappages(new, i, PGSIZE, (uint64)mem, flags) < 0){
+        release(&ptlock);
+        goto fail;
+      }
+      swap_track((uint64)mem, new, i);
+      mem = 0;
+      release(&ptlock);
+      break;
+    }
+  }
+  return 0;
+fail:
+  if(mem)
+    kfree(mem);
+  uvmunmap(new, 0, i / PGSIZE, 1);
+  return -1;
+}

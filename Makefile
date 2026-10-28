@@ -65,6 +65,7 @@ CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
 RAM_MB ?= 128
 SWAP_POLICY ?= 1
 CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
+CFLAGS += -DXV6_CPUS=$(CPUS)
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -march=rv64gc
@@ -133,6 +134,8 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
+	$U/_threadlife\
+	$U/_kthreadtest\
 	$U/_baseline\
         $U/_lazytest\
         $U/_cowtest\

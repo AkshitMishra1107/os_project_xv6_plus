@@ -44,3 +44,8 @@ void *memcpy(void *, const void *, uint);
 // umalloc.c
 void* malloc(uint);
 void free(void*);
+
+int kthread_create(uint64, uint64, uint64, uint64);
+void kthread_exit(void) __attribute__((noreturn));
+int kthread_join(int);
+int kgettid(void);

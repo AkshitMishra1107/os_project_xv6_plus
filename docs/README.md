@@ -6,3 +6,5 @@
 - [Team contribution workflow](../CONTRIBUTING.md)
 
 New validated features follow the same structure: one explanation page and one results directory containing selected outputs and screenshots. The detailed private development/report archive is kept outside the public documentation.
+
+- [Threads: architecture, behavior and boundaries](features/threads.md) and [validation results](results/threads/README.md)

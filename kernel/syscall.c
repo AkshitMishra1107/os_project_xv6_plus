@@ -108,6 +108,10 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
+extern uint64 sys_kthread_create(void);
+extern uint64 sys_kthread_exit(void);
+extern uint64 sys_kthread_join(void);
+extern uint64 sys_kgettid(void);
 extern uint64 sys_memstat(void);
 
 // An array mapping syscall numbers from syscall.h
@@ -134,6 +138,10 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_kthread_create] = sys_kthread_create,
+[SYS_kthread_exit] = sys_kthread_exit,
+[SYS_kthread_join] = sys_kthread_join,
+[SYS_kgettid] = sys_kgettid,
 [SYS_memstat] = sys_memstat,
 };
 
