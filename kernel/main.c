@@ -20,6 +20,7 @@ main()
     kinit();
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging
+    futex_init();
     procinit();      // process table
     trapinit();      // trap vectors
     trapinithart();  // install kernel trap vector

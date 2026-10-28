@@ -29,3 +29,7 @@
 #define SYS_kthread_join 25
 
 #define SYS_kgettid 26
+
+#define SYS_futex_wait 27
+
+#define SYS_futex_wake 28

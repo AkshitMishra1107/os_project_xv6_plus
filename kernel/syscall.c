@@ -112,6 +112,8 @@ extern uint64 sys_kthread_create(void);
 extern uint64 sys_kthread_exit(void);
 extern uint64 sys_kthread_join(void);
 extern uint64 sys_kgettid(void);
+extern uint64 sys_futex_wait(void);
+extern uint64 sys_futex_wake(void);
 extern uint64 sys_memstat(void);
 
 // An array mapping syscall numbers from syscall.h
@@ -142,6 +144,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_kthread_exit] = sys_kthread_exit,
 [SYS_kthread_join] = sys_kthread_join,
 [SYS_kgettid] = sys_kgettid,
+[SYS_futex_wait] = sys_futex_wait,
+[SYS_futex_wake] = sys_futex_wake,
 [SYS_memstat] = sys_memstat,
 };
 

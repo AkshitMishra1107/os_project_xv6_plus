@@ -1,0 +1,19 @@
+futextest
+futextest: OK (200 handshakes, mismatch, invalid address, keys, kill)
+$ kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$ threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$ lazytest
+lazytest: OK (656 pages touched)
+$ cowtest
+cowtest: OK
+$ memstat
+page faults      21366
+lazy allocations 21211
+cow copies       83
+swap outs        0
+swap ins         0
+free pages       32303
+swap slots used  0
+$ 

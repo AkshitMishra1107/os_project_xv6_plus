@@ -45,3 +45,7 @@ entry("kthread_exit");
 entry("kthread_join");
 
 entry("kgettid");
+
+entry("futex_wait");
+
+entry("futex_wake");

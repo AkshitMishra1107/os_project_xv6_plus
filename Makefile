@@ -3,6 +3,7 @@ U=user
 
 OBJS = \
   $K/entry.o \
+  $K/futex.o \
   $K/start.o \
   $K/console.o \
   $K/printf.o \
@@ -134,6 +135,7 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
+	$U/_futextest\
 	$U/_threadlife\
 	$U/_kthreadtest\
 	$U/_baseline\

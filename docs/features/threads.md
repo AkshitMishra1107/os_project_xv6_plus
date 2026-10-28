@@ -37,3 +37,23 @@ The trampoline exchanges the saved user register with `sscratch` to select the c
 Raw APIs are declared in `user/user.h`: `kthread_create(entry, arg, stack_top, exit_stub)`, `kthread_exit()`, `kthread_join(tid)`, and `kgettid()`. The caller owns its user stack until join succeeds.
 
 See [recorded results](../results/threads/README.md). Futexes and the user library are subsequent milestones.
+
+## Futexes (v0.7)
+
+`futex_wait(address, expected)` sleeps only if the aligned user integer still equals `expected`. `futex_wake(address)` wakes all waiters for that process and exact address, returning the number woken. Different addresses that hash to the same bucket remain distinct, and identical virtual addresses in different processes remain distinct.
+
+```mermaid
+sequenceDiagram
+  participant W as Waiting thread
+  participant K as Kernel bucket lock
+  participant S as Signalling thread
+  W->>K: Check current value under bucket lock
+  K->>K: Enqueue and sleep atomically
+  S->>S: Change user value with memory ordering
+  S->>K: Wake matching address under same lock
+  K->>W: Runnable; recheck predicate
+```
+
+Prefaulting happens before the bucket spinlock. The expected-value check and transition to sleep share the lock used by wake, avoiding the check-to-sleep lost-wakeup window. Invalid or unaligned wait addresses return -1; a value mismatch returns immediately. Callers must keep the word allocated while waiters exist and loop around their actual predicate. Waking is not ownership transfer or a promise that the predicate remains true.
+
+Syscall numbers 23–28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.

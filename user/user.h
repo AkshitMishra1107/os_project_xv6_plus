@@ -49,3 +49,6 @@ int kthread_create(uint64, uint64, uint64, uint64);
 void kthread_exit(void) __attribute__((noreturn));
 int kthread_join(int);
 int kgettid(void);
+
+int futex_wait(int *, int);
+int futex_wake(int *);

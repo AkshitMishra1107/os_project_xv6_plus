@@ -217,3 +217,5 @@ extern struct spinlock ptlock;
 #define ACC_READ  0
 #define ACC_WRITE 1
 #define ACC_EXEC  2
+
+void futex_init(void);
