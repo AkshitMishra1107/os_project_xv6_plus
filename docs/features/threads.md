@@ -36,7 +36,7 @@ The trampoline exchanges the saved user register with `sscratch` to select the c
 
 Raw APIs are declared in `user/user.h`: `kthread_create(entry, arg, stack_top, exit_stub)`, `kthread_exit()`, `kthread_join(tid)`, and `kgettid()`. The caller owns its user stack until join succeeds.
 
-See [recorded results](../results/threads/README.md). Futexes and the user library are subsequent milestones.
+See [recorded results](../results/threads/README.md). The following sections describe the futex and library milestones.
 
 ## Futexes (v0.7)
 
@@ -56,7 +56,7 @@ sequenceDiagram
 
 Prefaulting happens before the bucket spinlock. The expected-value check and transition to sleep share the lock used by wake, avoiding the check-to-sleep lost-wakeup window. Invalid or unaligned wait addresses return -1; a value mismatch returns immediately. Callers must keep the word allocated while waiters exist and loop around their actual predicate. Waking is not ownership transfer or a promise that the predicate remains true.
 
-Syscall numbers 23â€“28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
+Syscall numbers 23Ã¢â‚¬â€œ28 are allocated to four thread calls and two futex calls. Number 29 remains available for the teammate's tracing implementation.
 
 ## User library (v0.8)
 
@@ -69,3 +69,39 @@ Stack allocation and metadata are serialized internally, including concurrent ne
 Before the first SMP worker starts, inherited writable COW pages are made private while the process is still single-threaded. This also prevents a worker from reading an old COW frame through a remote cached translation. No general inter-CPU TLB shootdown is claimed.
 
 After `fork()` from a multi-threaded program, the child should exec or exit before using the user thread library: copied user-space lock state may describe a lock held by a parent thread. Do not reuse a TID after its successful join as a persistent identity.
+
+## Demonstrations and combined memory tests (v0.9)
+
+| Command | Added capability demonstrated | What is checked |
+|---|---|---|
+| `racetest` | Safely update shared state | Four workers; protected count exactly 200,000; unprotected result is scheduling dependent |
+| `prodcons` | Sleep on a bounded-queue predicate | Two producers and two consumers, capacity eight; 200 items and total 10,100; every value consumed twice |
+| `philosophers` | Avoid circular lock waiting | Five workers use ascending fork order; each finishes 20 meals |
+| `semtest` | Limit concurrent resource users | Six workers complete 60 operations using two permits |
+| `exittest` | End a process from any member | Parent actually receives status 3 after worker-triggered group exit |
+| `speedup 1/2/3` | Partition a fixed compute workload | Always 40 million iterations; verifies each unsigned checksum and records guest ticks |
+| `threadmem` | Share lazy memory and grow the heap | Concurrent first touch, unique growth ranges and inherited COW visibility without a syscall between reader observations |
+| `threadswap` | Combine shared memory and replacement | Four workers verify a shared 12 MB region (3,072 pages); use one CPU and 8 MB RAM to observe swap activity |
+
+```mermaid
+flowchart TD
+    L[Lock mutex] --> P{Queue predicate holds?}
+    P -- No --> S[Snapshot condition sequence and unlock]
+    S --> W[Futex wait only while sequence is unchanged]
+    W --> L
+    P -- Yes --> U[Update queue and signal condition]
+    U --> R[Unlock mutex]
+```
+
+The filesystem region grows from 2,000 to 4,096 blocks to accommodate the added executable programs. Swap still has 16 MB and starts immediately after the filesystem through `SWAPSTART=FSSIZE`. This does not increase usable RAM. Run `make clean` when changing CPU count, RAM limit or replacement policy.
+
+The user stacks are fixed 16 KB allocations without separate guard pages. The programs demonstrate educational synchronization; they do not promise deadlock freedom for arbitrary application lock orders or speedup for arbitrary workloads.
+
+## Code map
+
+- [Group lifecycle and first-worker COW preparation](../../kernel/proc.c), [member metadata](../../kernel/proc.h)
+- [Per-member trap entry and return](../../kernel/trampoline.S), [trap return call](../../kernel/trap.c)
+- [Futex wait and wake](../../kernel/futex.c)
+- [User library](../../user/thread.c), [public header](../../user/thread.h)
+- [Raw thread tests](../../user/kthreadtest.c), [lifecycle test](../../user/threadlife.c), [futex test](../../user/futextest.c)
+- [Parallel sum](../../user/threadtest.c), [library stress](../../user/libtest.c), [shared-memory test](../../user/threadmem.c), [thread and swap test](../../user/threadswap.c)

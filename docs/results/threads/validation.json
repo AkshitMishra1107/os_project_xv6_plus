@@ -1,0 +1,114 @@
+{
+  "source_tree_sha256": "b61837d90722e94e33583db7157c32e7f9e3a449475897ea5301d4665ce88b34",
+  "runs": [
+    {
+      "name": "v09-smp-stress",
+      "configuration": {
+        "cpus": 3,
+        "ram_mb": 128,
+        "swap_policy": 1
+      },
+      "completed": true,
+      "checkout_commit": "812d181f2038854dabafa846433e5cc3ca807d9b",
+      "working_source_diff_sha256": "d6c860701303486235d257c264d8a7a43f3a21ac6aa097c23cdac16d20d8235e",
+      "console_sha256": "bfd0563bb8e226a27d0641d419f563833e8ed9567933ce45aee739d2871174da",
+      "command_count": 153,
+      "usertests_passes": 1,
+      "threadswap_passes": 0,
+      "memstat_before": {
+        "free_pages": 32300,
+        "swap_slots_used": 0,
+        "swap_outs": 0,
+        "swap_ins": 0
+      },
+      "memstat_after": {
+        "free_pages": 32300,
+        "swap_slots_used": 0,
+        "swap_outs": 0,
+        "swap_ins": 0
+      }
+    },
+    {
+      "name": "v09-onecpu-regression",
+      "configuration": {
+        "cpus": 1,
+        "ram_mb": 128,
+        "swap_policy": 1
+      },
+      "completed": true,
+      "checkout_commit": "1e7591b8b2377ca4e0274f5fd6abbc971c557d9b",
+      "working_source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "console_sha256": "230bf6bd3da312acc11267770edd9928976e6c990c1c61dcc8f1c3fd715af500",
+      "command_count": 14,
+      "usertests_passes": 1,
+      "threadswap_passes": 0,
+      "memstat_before": {
+        "free_pages": 32300,
+        "swap_slots_used": 0,
+        "swap_outs": 0,
+        "swap_ins": 0
+      },
+      "memstat_after": {
+        "free_pages": 32302,
+        "swap_slots_used": 2,
+        "swap_outs": 82515,
+        "swap_ins": 693
+      },
+      "capture_note": "Same guest continued with an extended capture window; earlier command durations unavailable. Two live Ctrl+P snapshots are in the transcript."
+    },
+    {
+      "name": "v09-fifo-pressure",
+      "configuration": {
+        "cpus": 1,
+        "ram_mb": 8,
+        "swap_policy": 1
+      },
+      "completed": true,
+      "checkout_commit": "812d181f2038854dabafa846433e5cc3ca807d9b",
+      "working_source_diff_sha256": "d6c860701303486235d257c264d8a7a43f3a21ac6aa097c23cdac16d20d8235e",
+      "console_sha256": "77ccf950f7f9987979724e5686d5f18ea2176b5eee30a92168887106a5a4528d",
+      "command_count": 27,
+      "usertests_passes": 0,
+      "threadswap_passes": 10,
+      "memstat_before": {
+        "free_pages": 1850,
+        "swap_slots_used": 0,
+        "swap_outs": 0,
+        "swap_ins": 0
+      },
+      "memstat_after": {
+        "free_pages": 1852,
+        "swap_slots_used": 2,
+        "swap_outs": 41315,
+        "swap_ins": 24418
+      }
+    },
+    {
+      "name": "v09-clock-pressure",
+      "configuration": {
+        "cpus": 1,
+        "ram_mb": 8,
+        "swap_policy": 2
+      },
+      "completed": true,
+      "checkout_commit": "1e7591b8b2377ca4e0274f5fd6abbc971c557d9b",
+      "working_source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "console_sha256": "4f623d102474e8e7d0cdfbc9113a4577d0bd36bcd8179963e57a44bac6a38b26",
+      "command_count": 13,
+      "usertests_passes": 0,
+      "threadswap_passes": 3,
+      "memstat_before": {
+        "free_pages": 1850,
+        "swap_slots_used": 0,
+        "swap_outs": 0,
+        "swap_ins": 0
+      },
+      "memstat_after": {
+        "free_pages": 1852,
+        "swap_slots_used": 2,
+        "swap_outs": 20377,
+        "swap_ins": 12587
+      }
+    }
+  ]
+}
