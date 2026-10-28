@@ -12,10 +12,17 @@ int
 fetchaddr(uint64 addr, uint64 *ip)
 {
   struct proc *p = myproc();
-  if(addr >= p->sz || addr+sizeof(uint64) > p->sz) // both tests needed, in case of overflow
+
+  acquire(&ptlock);
+  uint64 sz = p->leader->sz;
+  release(&ptlock);
+
+  if(addr >= sz || sizeof(*ip) > sz - addr)
     return -1;
+
   if(copyin(p->pagetable, (char *)ip, addr, sizeof(*ip)) != 0)
     return -1;
+
   return 0;
 }
 

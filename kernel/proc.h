@@ -104,4 +104,9 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  struct proc *leader;  // main thread of this process
+  int tid;              // thread number, main thread is 0
+  int nthreads;         // live thread count, maintained by leader
+  uint tidmask;         // occupied thread numbers
+  uint64 tf_va;         // this thread's trapframe address
 };

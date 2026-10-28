@@ -1,0 +1,40 @@
+OBSERVED V0.5 CANDIDATE RESULTS
+Selected console excerpts from recorded test sessions, not a new execution.
+All configurations use one CPU. These observations were captured before the candidate commit and release integration.
+
+128 MB USABLE RAM, FIFO
+baseline: sbrk(200MB) succeeded
+lazytest: OK (656 pages touched)
+cowtest: OK
+forkbench: 50 forks of a 20 MB process took 5 ticks
+ALL TESTS PASSED
+Final memstat: faults 830229; lazy allocations 777840; cow copies 190;
+swap outs 82554; swap ins 693; free pages 32306; used slots 1.
+
+8 MB USABLE RAM, FIFO
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4369, swap ins 3072
+memhog: child exit status 0
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 8738, swap ins 6148
+memhog: child exit status 0
+swapfork: child bad=0
+swapfork: OK
+Final memstat: faults 17986; lazy allocations 8720; cow copies 1556;
+swap outs 11577; swap ins 7692; free pages 1856; used slots 1.
+
+8 MB USABLE RAM, CLOCK
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4369, swap ins 3068
+memhog: child exit status 0
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 8279, swap ins 5678
+memhog: child exit status 0
+swapfork: child bad=0
+swapfork: OK
+Final memstat: faults 17516; lazy allocations 8720; cow copies 1556;
+swap outs 11118; swap ins 7222; free pages 1856; used slots 1.
+
+Program swap counts precede child exit and later measurement commands.
+Final memstat is a later cumulative snapshot, so the numbers can differ.
+The residual swap slot is stable in these observations; its owner was not traced.

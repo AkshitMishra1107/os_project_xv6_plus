@@ -7,56 +7,61 @@
 #include "proc.h"
 #include "defs.h"
 #include "fs.h"
+// Protect page-table changes shared by threads.
+struct spinlock ptlock;
 
-
-// Returns the physical page with interrupts disabled.
-// The caller must call pop_off() after accessing that page.
-// On failure, returns 0 with interrupts restored.
+// On success, returns the physical page with ptlock held.
+// The caller must release ptlock after accessing the page.
+// On failure, returns 0 without holding ptlock.
 static uint64
 pin_user_page(pagetable_t pagetable, uint64 va, int write)
 {
   struct proc *p = myproc();
 
   for(int tries = 0; tries < 8; tries++){
-    push_off();
+    acquire(&ptlock);
 
     if(va < MAXVA){
       pte_t *pte = walk(pagetable, va, 0);
-      uint64 need = PTE_V | PTE_U | (write ? PTE_W : 0);
+      uint64 need = PTE_V | PTE_U |
+                    (write ? PTE_W : PTE_R);
 
       if(pte && (*pte & need) == need)
         return PTE2PA(*pte);
     }
 
-    pop_off();
+    release(&ptlock);
 
     if(pagetable != p->pagetable ||
-       handle_page_fault(p, va, write) < 0)
+       handle_page_fault(p, va,
+                         write ? ACC_WRITE : ACC_READ) < 0)
       return 0;
   }
 
   return 0;
 }
-
 // Prepare user-buffer pages before read/write copies.
 void
 prefault(uint64 va, uint64 n, int write)
 {
   struct proc *p = myproc();
 
-  if(n == 0 || va >= p->sz)
+  acquire(&ptlock);
+  uint64 sz = p->leader->sz;
+  release(&ptlock);
+
+  if(n == 0 || va >= sz)
     return;
 
   uint64 end = va + n;
-
-  if(end < va || end > p->sz)
-    end = p->sz;
+  if(end < va || end > sz)
+    end = sz;
 
   for(uint64 a = PGROUNDDOWN(va); a < end; a += PGSIZE){
     if(pin_user_page(p->pagetable, a, write) == 0)
       break;
 
-    pop_off();
+    release(&ptlock);
   }
 }
 /*
@@ -237,23 +242,24 @@ uvmunmap(pagetable_t pagetable, uint64 va,
   if((va % PGSIZE) != 0)
     panic("uvmunmap: not aligned");
 
-  for(a = va; a < va + npages * PGSIZE; a += PGSIZE){
-    push_off();
+  // Preserve a lock already held by our caller.
+  push_off();
+  int locked_here = !holding(&ptlock);
+  if(locked_here)
+    acquire(&ptlock);
 
+  for(a = va; a < va + npages * PGSIZE; a += PGSIZE){
     pte = walk(pagetable, a, 0);
 
-    if(pte == 0){
-      pop_off();
+    // Untouched lazy pages may have no mapping.
+    if(pte == 0)
       continue;
-    }
 
     if((*pte & PTE_V) == 0){
       if(*pte & PTE_SWAP){
         swap_slot_free(PTE2SLOT(*pte));
         *pte = 0;
       }
-
-      pop_off();
       continue;
     }
 
@@ -262,14 +268,16 @@ uvmunmap(pagetable_t pagetable, uint64 va,
 
     if(do_free){
       uint64 pa = PTE2PA(*pte);
-
       swap_untrack_owner(pa, pagetable);
       kfree((void *)pa);
     }
 
     *pte = 0;
-    pop_off();
   }
+
+  if(locked_here)
+    release(&ptlock);
+  pop_off();
 }
 
 // create an empty user page table.
@@ -384,6 +392,7 @@ uvmfree(pagetable_t pagetable, uint64 sz)
 // physical memory.
 // returns 0 on success, -1 on failure.
 // frees any allocated pages on failure.
+
 int
 uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 {
@@ -393,26 +402,27 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 
   for(i = 0; i < sz; i += PGSIZE){
     for(;;){
-      push_off();
+      acquire(&ptlock);
 
       pte = walk(old, i, 0);
 
       if(pte && (*pte & PTE_SWAP)){
-        pop_off();
+        release(&ptlock);
 
         // Restore the parent's page before sharing it.
-        if(handle_page_fault(myproc(), i, 0) < 0)
+        if(handle_page_fault(myproc(), i, ACC_READ) < 0)
           goto err;
 
-        // Swap-in may have slept: inspect again.
+        // Fault handling may have slept: inspect again.
         continue;
       }
 
       break;
     }
 
+    // Untouched lazy pages need no child mapping.
     if(pte == 0 || (*pte & PTE_V) == 0){
-      pop_off();
+      release(&ptlock);
       continue;
     }
 
@@ -424,12 +434,12 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
     flags = PTE_FLAGS(*pte);
 
     if(mappages(new, i, PGSIZE, pa, flags) != 0){
-      pop_off();
+      release(&ptlock);
       goto err;
     }
 
     kref_inc((void *)pa);
-    pop_off();
+    release(&ptlock);
   }
 
   sfence_vma();
@@ -473,7 +483,7 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
       n = len;
 
     memmove((void *)(pa0 + (dstva - va0)), src, n);
-    pop_off();
+    release(&ptlock);
 
     len -= n;
     src += n;
@@ -502,7 +512,7 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
       n = len;
 
     memmove(dst, (void *)(pa0 + (srcva - va0)), n);
-    pop_off();
+    release(&ptlock);
 
     len -= n;
     dst += n;
@@ -548,7 +558,7 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
       dst++;
     }
 
-    pop_off();
+    release(&ptlock);
     srcva = va0 + PGSIZE;
   }
 

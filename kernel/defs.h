@@ -207,3 +207,8 @@ void            memstat_fill(struct memstat*);
 
 extern uint64 stat_faults, stat_lazy, stat_cow;
 extern uint64 stat_swapin, stat_swapout;
+extern struct spinlock ptlock;
+
+#define ACC_READ  0
+#define ACC_WRITE 1
+#define ACC_EXEC  2

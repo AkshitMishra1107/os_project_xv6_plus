@@ -124,6 +124,11 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->leader = p;
+  p->tid = 0;
+  p->nthreads = 1;
+  p->tidmask = 1;
+  p->tf_va = TRAPFRAME;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -168,6 +173,11 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->leader = 0;
+  p->tid = 0;
+  p->nthreads = 0;
+  p->tidmask = 0;
+  p->tf_va = 0;
   p->state = UNUSED;
 }
 
@@ -256,20 +266,32 @@ userinit(void)
 
 // Grow or shrink user memory by n bytes.
 // Return 0 on success, -1 on failure.
+// Caller holds ptlock.
 int
 growproc(int n)
 {
-  uint64 sz;
-  struct proc *p = myproc();
+  struct proc *p = myproc()->leader;
+  uint64 sz = p->sz;
 
-  sz = p->sz;
   if(n > 0){
-    if((sz = uvmalloc(p->pagetable, sz, sz + n, PTE_W)) == 0) {
+    uint64 newsz = sz + (uint64)n;
+
+    if(newsz < sz || newsz > USERLIMIT)
       return -1;
-    }
+
+    sz = uvmalloc(p->pagetable, sz, newsz, PTE_W);
+    if(sz == 0)
+      return -1;
+
   } else if(n < 0){
-    sz = uvmdealloc(p->pagetable, sz, sz + n);
+    uint64 shrink = (uint64)(-(long)n);
+
+    if(shrink > sz)
+      return -1;
+
+    sz = uvmdealloc(p->pagetable, sz, sz - shrink);
   }
+
   p->sz = sz;
   return 0;
 }
