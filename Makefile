@@ -135,6 +135,14 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
+	$U/_racetest\
+	$U/_prodcons\
+	$U/_philosophers\
+	$U/_exittest\
+	$U/_semtest\
+	$U/_speedup\
+	$U/_threadmem\
+	$U/_threadswap\
 	$U/_threadtest\
 	$U/_libtest\
 	$U/_futextest\
