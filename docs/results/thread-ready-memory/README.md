@@ -49,3 +49,7 @@ Run memstat, memhog 4, memhog 12, memstat, memhog 12, memstat, swapfork and mems
 ![Normal full usertests passed](screenshots/normal-usertests-pass.png)
 
 [What changed in the memory code](../../features/thread-ready-memory.md) · [Earlier memory results](../memory/README.md)
+
+## Integration status
+
+The prerequisite was merged through PR #3 on 28 October 2026. The historical candidate observations above remain tied to their original source. Later main validation is in the [integration record](../threads/integration.md).

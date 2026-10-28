@@ -6,8 +6,8 @@ Both developers use this repository with their own local clone, Git identity and
 
 | Developer | Branch | Work |
 | --- | --- | --- |
-| Akshit | `feature/threads-sync` | v0.5â€“v0.9: thread-ready memory, kernel threads, futex, synchronization library and demonstrations |
-| Nikunj Trehan (`nikunjtrehan`) | `feature/signals-debugger` | Tracing prototype now; v0.10â€“v0.13: tracing integration, signals, debugger protocol and tool |
+| Akshit | `feature/threads-sync` | v0.5–v0.9: thread-ready memory, kernel threads, futex, synchronization library and demonstrations |
+| Nikunj Trehan (`nikunjtrehan`) | `feature/signals-debugger` | Tracing prototype now; v0.10–v0.13: tracing integration, signals, debugger protocol and tool |
 
 Nikunj has pushed the standalone tracing prototype in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2). Full Part 3 integration depends on the v0.9 thread interfaces. A standalone tracing prototype may be committed and pushed now, but its PR stays draft until the thread-dependent hooks and tests are complete. Each developer uses their own GitHub account and needs write access to push to the shared repository.
 
@@ -91,13 +91,13 @@ git merge origin/main
 git push origin feature/signals-debugger
 ```
 
-Akshit uses the same sequence on the relevant thread feature branch. The implementation PR initially targets `feature/threads-sync` while PR #3 is open. Merge PR #3 first, retarget the implementation PR to main, then review and merge it. This keeps the prerequisite review stable and preserves the milestone commits. Resolve conflicts deliberately, then rebuild and test before pushing. To stop an unresolved merge and return to its starting state, use `git merge --abort`. Never resolve a shared file by blindly replacing the other person's implementation, force-pushing shared history, or moving an existing tag.
+Akshit uses the same sequence on his current feature branch. PRs #3 and #4 are now merged into main; new feature PRs target main unless a concrete unmerged prerequisite is identified. Resolve conflicts deliberately, then rebuild and test before pushing. To stop an unresolved merge and return to its starting state, use `git merge --abort`. Never resolve a shared file by blindly replacing the other person's implementation, force-pushing shared history, or moving an existing tag.
 
 ## Shared interfaces
 
 | Interface | Agreement |
 | --- | --- |
-| System calls | memstat 22; threads 23â€“26; futex 27â€“28; trace 29; signals 30â€“33; debugger 34â€“39 |
+| System calls | memstat 22; threads 23–26; futex 27–28; trace 29; signals 30–33; debugger 34–39 |
 | Thread memory | Leader owns shared size/page table; preserve ptlock ownership, per-thread trapframes and lifecycle behavior |
 | Trace lifecycle | Final integration includes fork and kthread_create inheritance, plus freeproc and reap_thread reset |
 | Shared files | Coordinate proc.h/proc.c, trap.c, syscall.c/syscall.h, sysproc.c, defs.h, Makefile, user.h and usys.pl |
@@ -111,4 +111,10 @@ For a clean normal memory build use `make clean` followed by `make qemu CPUS=1 R
 
 Capture the useful result, command and configuration. Keep only the clearest screenshot for each distinct result and put its filename in the result page. Before/after comparisons must identify both versions and use comparable configurations.
 
-Akshit creates an official release tag only after the milestone PR is merged and integrated main passes its checks. A commit message mentioning a version does not by itself validate that release. The v0.5 and v0.6–v0.9 implementation tests are recorded; review, main integration and release tags remain pending. Keep Nikunj’s tracing draft separate until thread inheritance and reuse hooks are integrated and tested.
+Akshit creates an official release tag only after the milestone PR is merged and integrated main passes its checks. A commit message mentioning a version does not by itself validate that release. The v0.5 prerequisite and v0.6-v0.9 implementation are integrated; their source and validation history are preserved by the v0.9 tag. Keep Nikunj’s tracing draft separate until thread inheritance and reuse hooks are integrated and tested.
+
+## Current handoff
+
+PRs #3 and #4 were integrated on 28 October at the owner's instruction after local source review and validation. There were no external GitHub approval reviews; the integration record states this explicitly. Peer review remains the preferred workflow for new shared-kernel changes.
+
+Nikunj should save his own work, fetch origin, stay on feature/signals-debugger, and merge origin/main. Preserve thread creation, group cleanup, per-thread trapframes, page-table lock ownership and syscall allocations while adding tracing. Keep draft PR #2 incomplete until the thread inheritance/reuse hooks and combined tests pass. Individual authorship and the inherited MIT license/history remain intact.

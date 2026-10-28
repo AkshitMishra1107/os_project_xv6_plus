@@ -1,0 +1,35 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$ futextest
+futextest: OK (200 handshakes, mismatch, invalid address, keys, kill)
+$ threadtest
+threadtest: OK sum = 499500 (expected 499500)
+$ libtest
+libtest: OK (60 nested creates/joins, mutex 3000, condition barrier, semaphore)
+$ threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$ threadmem
+threadmem: OK (concurrent lazy faults, shared growth, inherited COW visibility)
+$ lazytest
+lazytest: OK (656 pages touched)
+$ cowtest
+cowtest: OK
+$ forkbench
+forkbench: 50 forks of a 20 MB process took 8 ticks
+$ memstat
+page faults      26738
+lazy allocations 26454
+cow copies       202
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ 
