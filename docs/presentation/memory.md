@@ -1,6 +1,6 @@
 # Presenting the memory work to a teacher
 
-Use the [Word draft](../reports/memory-management-draft.docx), especially sections 17–19. Keep the [reference map](../references.md) open so the MIT origin and assignment correspondence are clear.
+Use the [six-page implementation walkthrough](memory-implementation-walkthrough.docx) to explain the memory mechanisms, code changes and observed comparisons. The [detailed report](../reports/memory-management-draft.docx), especially sections 17–19, supplies the longer demonstration and evidence checklist. Keep the [reference map](../references.md) open for the MIT assignment correspondence and primary sources.
 
 ## Demonstration order
 

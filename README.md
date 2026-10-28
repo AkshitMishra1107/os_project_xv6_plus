@@ -6,7 +6,8 @@ The memory milestones and v0.5–v0.9 thread foundation are integrated into `mai
 
 ## Start here
 
-- [Memory report draft for teacher discussion](docs/reports/memory-management-draft.docx): implementation, diagrams, original evidence, limits, references and viva preparation.
+- [Memory implementation walkthrough](docs/presentation/memory-implementation-walkthrough.docx): six pages explaining the kernel changes, before-and-after behavior, code excerpts and observed results.
+- [Detailed memory report draft](docs/reports/memory-management-draft.docx): extended implementation detail, original evidence, references and viva preparation.
 - [What to present to the teacher](docs/presentation/memory.md): commands, evidence checklist and explanations.
 - [MIT labs and other primary references](docs/references.md): direct lab links and how they relate to this project.
 - [Memory mechanisms and source map](docs/features/memory.md) · [memory comparisons and original screenshots](docs/results/memory/README.md).
