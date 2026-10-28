@@ -26,3 +26,6 @@ user/usys.S
 /docs/integration/
 /project-records/
 /team-documents/
+
+# Editor recovery files stay local.
+*.swp

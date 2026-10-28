@@ -90,6 +90,11 @@ int             cpuid(void);
 void            exit(int);
 int             fork(void);
 int             growproc(int);
+int             proc_can_exec(void);
+int             kthread_create(uint64, uint64, uint64, uint64);
+void            kthread_exit(void) __attribute__((noreturn));
+int             kthread_join(int);
+int             uvmcopy_private(pagetable_t, pagetable_t, uint64);
 void            proc_mapstacks(pagetable_t);
 pagetable_t     proc_pagetable(struct proc *);
 void            proc_freepagetable(pagetable_t, uint64);
@@ -212,3 +217,5 @@ extern struct spinlock ptlock;
 #define ACC_READ  0
 #define ACC_WRITE 1
 #define ACC_EXEC  2
+
+void futex_init(void);

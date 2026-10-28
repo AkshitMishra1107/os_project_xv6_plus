@@ -109,4 +109,6 @@ struct proc {
   int nthreads;         // live thread count, maintained by leader
   uint tidmask;         // occupied thread numbers
   uint64 tf_va;         // this thread's trapframe address
+  int exiting;          // leader: group exit requested, protected by wait_lock
+  int exit_status;      // leader: status of the first group exit request
 };

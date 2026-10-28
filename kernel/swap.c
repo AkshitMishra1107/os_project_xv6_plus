@@ -307,12 +307,15 @@ swap_out_one(void)
 void *
 kalloc_user(void)
 {
+#if XV6_CPUS == 1
+  // Eviction needs cross-CPU TLB shootdown before it can run with SMP.
   if(kfreepages() < SWAP_LOW_WATER && nlocks_held() == 0){
     while(kfreepages() < SWAP_LOW_WATER + 16){
       if(swap_out_one() < 0)
         break;
     }
   }
+#endif
 
   return kalloc();
 }

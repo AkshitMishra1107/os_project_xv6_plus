@@ -129,6 +129,8 @@ found:
   p->nthreads = 1;
   p->tidmask = 1;
   p->tf_va = TRAPFRAME;
+  p->exiting = 0;
+  p->exit_status = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -178,6 +180,10 @@ freeproc(struct proc *p)
   p->nthreads = 0;
   p->tidmask = 0;
   p->tf_va = 0;
+  p->exiting = 0;
+  p->exit_status = 0;
+  memset(p->ofile, 0, sizeof(p->ofile));
+  p->cwd = 0;
   p->state = UNUSED;
 }
 
@@ -301,49 +307,46 @@ growproc(int n)
 int
 fork(void)
 {
-  int i, pid;
-  struct proc *np;
   struct proc *p = myproc();
-
-  // Allocate process.
-  if((np = allocproc()) == 0){
+  struct proc *l = p->leader;
+  acquire(&wait_lock);
+  int exiting = l->exiting;
+  int private_copy = l->nthreads > 1;
+  release(&wait_lock);
+  if(exiting)
     return -1;
-  }
 
-  // Copy user memory from parent to child.
-  if(uvmcopy(p->pagetable, np->pagetable, p->sz) < 0){
+  struct proc *np = allocproc();
+  if(np == 0)
+    return -1;
+  // USED slots cannot run. Copying may swap: do not hold np->lock.
+  release(&np->lock);
+  acquire(&ptlock);
+  uint64 sz = l->sz;
+  release(&ptlock);
+  int copied = private_copy ? uvmcopy_private(l->pagetable, np->pagetable, sz)
+                            : uvmcopy(l->pagetable, np->pagetable, sz);
+  if(copied < 0){
+    acquire(&np->lock);
     freeproc(np);
     release(&np->lock);
     return -1;
   }
-  np->sz = p->sz;
-
-  // copy saved user registers.
-  *(np->trapframe) = *(p->trapframe);
-
-  // Cause fork to return 0 in the child.
+  np->sz = sz;
+  *np->trapframe = *p->trapframe;
   np->trapframe->a0 = 0;
-
-  // increment reference counts on open file descriptors.
-  for(i = 0; i < NOFILE; i++)
+  for(int i = 0; i < NOFILE; i++)
     if(p->ofile[i])
       np->ofile[i] = filedup(p->ofile[i]);
   np->cwd = idup(p->cwd);
-
-  safestrcpy(np->name, p->name, sizeof(p->name));
-
-  pid = np->pid;
-
-  release(&np->lock);
-
+  safestrcpy(np->name, p->name, sizeof(np->name));
+  int pid = np->pid;
   acquire(&wait_lock);
-  np->parent = p;
-  release(&wait_lock);
-
+  np->parent = l;
   acquire(&np->lock);
   np->state = RUNNABLE;
   release(&np->lock);
-
+  release(&wait_lock);
   return pid;
 }
 
@@ -362,47 +365,279 @@ reparent(struct proc *p)
   }
 }
 
+
+// All group membership changes hold wait_lock. Counts and trapframe maps
+// additionally hold ptlock, matching sbrk's size/membership snapshot.
+static void
+reap_thread(struct proc *p)
+{
+  struct proc *l = p->leader;
+  acquire(&ptlock);
+  uvmunmap(l->pagetable, p->tf_va, 1, 0);
+  l->tidmask &= ~(1U << p->tid);
+  l->nthreads--;
+  release(&ptlock);
+  kfree(p->trapframe);
+  p->trapframe = 0;
+  p->pagetable = 0;
+  freeproc(p);
+}
+
+static void
+close_thread_files(struct proc *p)
+{
+  for(int fd = 0; fd < NOFILE; fd++){
+    if(p->ofile[fd]){
+      struct file *f = p->ofile[fd];
+      p->ofile[fd] = 0;
+      fileclose(f);
+    }
+  }
+  if(p->cwd){
+    begin_op();
+    iput(p->cwd);
+    end_op();
+    p->cwd = 0;
+  }
+}
+
+// Caller holds wait_lock; do not already hold a member's proc lock.
+static void
+stop_group(struct proc *l, int status)
+{
+  if(!l->exiting){
+    l->exiting = 1;
+    l->exit_status = status;
+  }
+  for(struct proc *q = proc; q < &proc[NPROC]; q++){
+    acquire(&q->lock);
+    if(q->state != UNUSED && q->leader == l){
+      q->killed = 1;
+      if(q->state == SLEEPING)
+        q->state = RUNNABLE;
+    }
+    release(&q->lock);
+  }
+}
+
+int
+proc_can_exec(void)
+{
+  struct proc *p = myproc();
+  acquire(&wait_lock);
+  int ok = p->leader == p && p->nthreads == 1 && !p->exiting;
+  release(&wait_lock);
+  return ok;
+}
+
+int
+kthread_create(uint64 fn, uint64 arg, uint64 sp, uint64 stub)
+{
+  struct proc *p = myproc(), *l = p->leader, *np;
+  if((fn & 1) || (stub & 1) || (sp & 15) || sp == 0)
+    return -1;
+#if XV6_CPUS > 1
+  // A process may have inherited COW mappings before creating its first
+  // worker. Resolve them while it is still alone: later remapping would
+  // leave another CPU reading the old physical page through a stale TLB.
+  acquire(&wait_lock);
+  int single = l->nthreads == 1;
+  release(&wait_lock);
+  if(single){
+    acquire(&ptlock);
+    uint64 sz = l->sz;
+    release(&ptlock);
+    for(uint64 va = 0; va < sz; va += PGSIZE){
+      acquire(&ptlock);
+      pte_t *pte = walk(l->pagetable, va, 0);
+      int cow = pte && (*pte & (PTE_V | PTE_U | PTE_COW)) ==
+                              (PTE_V | PTE_U | PTE_COW);
+      release(&ptlock);
+      if(cow && handle_page_fault(p, va, ACC_WRITE) < 0)
+        return -1;
+    }
+  }
+#endif
+  prefault(sp - 1, 1, 1);
+  acquire(&wait_lock);
+  if(l->exiting){
+    release(&wait_lock);
+    return -1;
+  }
+  int tid;
+  for(tid = 1; tid < MAXTHREADS; tid++)
+    if(!(l->tidmask & (1U << tid)))
+      break;
+  if(tid == MAXTHREADS){
+    release(&wait_lock);
+    return -1;
+  }
+  acquire(&ptlock);
+  int valid = fn < l->sz && stub < l->sz && sp <= l->sz;
+  pte_t *f = valid ? walk(l->pagetable, fn, 0) : 0;
+  pte_t *r = valid ? walk(l->pagetable, stub, 0) : 0;
+  pte_t *s = valid ? walk(l->pagetable, sp-1, 0) : 0;
+  uint64 exec = PTE_V | PTE_U | PTE_X;
+  valid = f && r && s && (*f & exec) == exec && (*r & exec) == exec &&
+          (*s & (PTE_V | PTE_U | PTE_W)) == (PTE_V | PTE_U | PTE_W);
+  release(&ptlock);
+  if(!valid){
+    release(&wait_lock);
+    return -1;
+  }
+  for(np = proc; np < &proc[NPROC]; np++){
+    acquire(&np->lock);
+    if(np->state == UNUSED)
+      break;
+    release(&np->lock);
+  }
+  if(np == &proc[NPROC]){
+    release(&wait_lock);
+    return -1;
+  }
+  np->state = USED;
+  struct trapframe *tf = (struct trapframe *)kalloc();
+  if(tf == 0){
+    freeproc(np);
+    release(&np->lock);
+    release(&wait_lock);
+    return -1;
+  }
+  acquire(&ptlock);
+  int mapped = mappages(l->pagetable, TFVA(tid), PGSIZE,
+                       (uint64)tf, PTE_R | PTE_W);
+  if(mapped == 0){
+    l->tidmask |= 1U << tid;
+    l->nthreads++;
+  }
+  release(&ptlock);
+  if(mapped < 0){
+    kfree(tf);
+    freeproc(np);
+    release(&np->lock);
+    release(&wait_lock);
+    return -1;
+  }
+  np->pid = l->pid;
+  np->leader = l;
+  np->tid = tid;
+  np->tf_va = TFVA(tid);
+  np->trapframe = tf;
+  np->pagetable = l->pagetable;
+  np->sz = 0;
+  np->parent = 0;
+  np->killed = np->xstate = np->exiting = np->exit_status = 0;
+  np->nthreads = np->tidmask = 0;
+  *tf = *p->trapframe;
+  tf->epc = fn;
+  tf->sp = sp;
+  tf->a0 = arg;
+  tf->ra = stub;
+  for(int i = 0; i < NOFILE; i++)
+    np->ofile[i] = p->ofile[i] ? filedup(p->ofile[i]) : 0;
+  np->cwd = idup(p->cwd);
+  safestrcpy(np->name, p->name, sizeof(np->name));
+  memset(&np->context, 0, sizeof(np->context));
+  np->context.ra = (uint64)forkret;
+  np->context.sp = np->kstack + PGSIZE;
+  np->state = RUNNABLE;
+  release(&np->lock);
+  release(&wait_lock);
+  return tid;
+}
+
+void
+kthread_exit(void)
+{
+  struct proc *p = myproc();
+  if(p == p->leader)
+    exit(0);
+  close_thread_files(p);
+  acquire(&wait_lock);
+  wakeup(p->leader);
+  acquire(&p->lock);
+  p->state = ZOMBIE;
+  release(&wait_lock);
+  sched();
+  panic("zombie thread exit");
+}
+
+int
+kthread_join(int tid)
+{
+  struct proc *p = myproc(), *l = p->leader;
+  if(tid <= 0 || tid >= MAXTHREADS || tid == p->tid)
+    return -1;
+  acquire(&wait_lock);
+  for(;;){
+    for(struct proc *q = proc; q < &proc[NPROC]; q++){
+      acquire(&q->lock);
+      if(q->state != UNUSED && q->leader == l && q->tid == tid){
+        if(q->state == ZOMBIE){
+          reap_thread(q);
+          release(&q->lock);
+          release(&wait_lock);
+          return 0;
+        }
+        release(&q->lock);
+        if(killed(p)){
+          release(&wait_lock);
+          return -1;
+        }
+        sleep(l, &wait_lock);
+        goto again;
+      }
+      release(&q->lock);
+    }
+    release(&wait_lock);
+    return -1;
+  again:;
+  }
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait().
 void
 exit(int status)
 {
-  struct proc *p = myproc();
-
+  struct proc *p = myproc(), *l = p->leader;
   if(p == initproc)
     panic("init exiting");
-
-  // Close all open files.
-  for(int fd = 0; fd < NOFILE; fd++){
-    if(p->ofile[fd]){
-      struct file *f = p->ofile[fd];
-      fileclose(f);
-      p->ofile[fd] = 0;
-    }
-  }
-
-  begin_op();
-  iput(p->cwd);
-  end_op();
-  p->cwd = 0;
-
   acquire(&wait_lock);
-
-  // Give any children to init.
+  stop_group(l, status);
+  if(p != l){
+    release(&wait_lock);
+    kthread_exit();
+  }
+  for(;;){
+    int alive = 0;
+    for(struct proc *q = proc; q < &proc[NPROC]; q++){
+      if(q == p)
+        continue;
+      acquire(&q->lock);
+      if(q->state != UNUSED && q->leader == p){
+        if(q->state == ZOMBIE)
+          reap_thread(q);
+        else
+          alive = 1;
+      }
+      release(&q->lock);
+    }
+    if(!alive)
+      break;
+    sleep(p, &wait_lock);
+  }
+  status = l->exit_status;
+  release(&wait_lock);
+  close_thread_files(p);
+  acquire(&wait_lock);
   reparent(p);
-
-  // Parent might be sleeping in wait().
   wakeup(p->parent);
-  
   acquire(&p->lock);
-
   p->xstate = status;
   p->state = ZOMBIE;
-
   release(&wait_lock);
-
-  // Jump into the scheduler, never to return.
   sched();
   panic("zombie exit");
 }
@@ -414,7 +649,7 @@ wait(uint64 addr)
 {
   struct proc *pp;
   int havekids, pid;
-  struct proc *p = myproc();
+  struct proc *p = myproc()->leader;
 
   acquire(&wait_lock);
 
@@ -449,7 +684,7 @@ wait(uint64 addr)
     }
 
     // No point waiting if we don't have any children.
-    if(!havekids || killed(p)){
+    if(!havekids || killed(myproc())){
       release(&wait_lock);
       return -1;
     }
@@ -624,21 +859,20 @@ wakeup(void *chan)
 int
 kill(int pid)
 {
-  struct proc *p;
-
-  for(p = proc; p < &proc[NPROC]; p++){
+  if(pid <= 0)
+    return -1;
+  acquire(&wait_lock);
+  for(struct proc *p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
-    if(p->pid == pid){
-      p->killed = 1;
-      if(p->state == SLEEPING){
-        // Wake process from sleep().
-        p->state = RUNNABLE;
-      }
-      release(&p->lock);
+    int match = p->state != UNUSED && p->leader == p && p->pid == pid;
+    release(&p->lock);
+    if(match){
+      stop_group(p, -1);
+      release(&wait_lock);
       return 0;
     }
-    release(&p->lock);
   }
+  release(&wait_lock);
   return -1;
 }
 

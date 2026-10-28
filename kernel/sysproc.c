@@ -57,7 +57,7 @@ sys_sbrk(void)
 
     // Reserve virtual space; allocate pages when accessed.
     l->sz = newsz;
-  } else if(growproc(n) < 0){
+  } else if(l->nthreads > 1 || growproc(n) < 0){
     release(&ptlock);
     return -1;
   }
@@ -123,4 +123,34 @@ sys_memstat(void)
     return -1;
 
   return 0;
+}
+
+
+uint64
+sys_kthread_create(void)
+{
+  uint64 fn, arg, sp, stub;
+  argaddr(0, &fn); argaddr(1, &arg);
+  argaddr(2, &sp); argaddr(3, &stub);
+  return kthread_create(fn, arg, sp, stub);
+}
+
+uint64
+sys_kthread_exit(void)
+{
+  kthread_exit();
+}
+
+uint64
+sys_kthread_join(void)
+{
+  int tid;
+  argint(0, &tid);
+  return kthread_join(tid);
+}
+
+uint64
+sys_kgettid(void)
+{
+  return myproc()->tid;
 }

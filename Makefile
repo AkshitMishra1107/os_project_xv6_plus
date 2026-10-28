@@ -3,6 +3,7 @@ U=user
 
 OBJS = \
   $K/entry.o \
+  $K/futex.o \
   $K/start.o \
   $K/console.o \
   $K/printf.o \
@@ -65,6 +66,7 @@ CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
 RAM_MB ?= 128
 SWAP_POLICY ?= 1
 CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
+CFLAGS += -DXV6_CPUS=$(CPUS)
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -march=rv64gc
@@ -104,7 +106,7 @@ $U/initcode: $U/initcode.S
 tags: $(OBJS) _init
 	etags *.S *.c
 
-ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
+ULIB = $U/thread.o $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
@@ -133,6 +135,19 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
+	$U/_racetest\
+	$U/_prodcons\
+	$U/_philosophers\
+	$U/_exittest\
+	$U/_semtest\
+	$U/_speedup\
+	$U/_threadmem\
+	$U/_threadswap\
+	$U/_threadtest\
+	$U/_libtest\
+	$U/_futextest\
+	$U/_threadlife\
+	$U/_kthreadtest\
 	$U/_baseline\
         $U/_lazytest\
         $U/_cowtest\

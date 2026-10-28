@@ -21,3 +21,15 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_memstat 22
+
+#define SYS_kthread_create 23
+
+#define SYS_kthread_exit 24
+
+#define SYS_kthread_join 25
+
+#define SYS_kgettid 26
+
+#define SYS_futex_wait 27
+
+#define SYS_futex_wake 28
