@@ -1,3 +1,5 @@
+Current validation, native captures and controlled benchmarks: [validation revision](../validation-upgrade/README.md). This page retains its historical source and results.
+
 # Matched comparison study
 
 Actual QEMU experiments on 2 November 2026. These support the comparison justifications and numeric tables in the final report. The implementation remains unchanged at `09d752e`; the tested source tree is `3341e82`.

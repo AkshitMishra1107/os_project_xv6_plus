@@ -107,6 +107,8 @@ def selftest():
     known = [1,2,3,4,1,2,5,1,2,3,4,5]
     assert faults(known, 3, 'FIFO') == 9
     assert faults(known, 4, 'FIFO') == 10
+    assert faults(known, 3, 'Clock') == 9
+    assert faults(known, 4, 'Clock') == 10
     assert faults(known, 3, 'LRU') == 10
     assert faults(known, 4, 'LRU') == 8
     assert faults(known, 3, 'OPT') == 7

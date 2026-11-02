@@ -1,3 +1,5 @@
+Current validation, native captures and controlled benchmarks: [validation revision](../validation-upgrade/README.md). This page retains its historical source and results.
+
 # Final integrated validation
 
 Real QEMU executions captured on 2 November 2026. The combined code preserves the original teammate commits and integrates them with the real thread library. Kernel/user/build code is frozen at integration commit `09d752e`; later presentation changes do not change this source.

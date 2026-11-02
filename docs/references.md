@@ -1,127 +1,47 @@
-# References and attribution
+# Primary references and their use
 
-These primary references were checked on 28 October 2026 while preparing the memory report draft. They document the techniques and upstream software; they do not certify this repository or imply an MIT grader pass. Newer xv6 versions differ from our pinned eager baseline.
+The report maps the following established mechanisms to the implementation and its experiments. MIT-lab algorithms are attributed; project engineering includes shared-state integration, diagnostics, lifecycle repairs and checked workloads.
 
-## How the project relates to the labs
+1. Microsoft, “What is the Windows Subsystem for Linux?” [Primary source](https://learn.microsoft.com/en-us/windows/wsl/about). Report use: Sections 2.1 and 4.1.
 
-| Project work | Reference | Relationship |
-|---|---|---|
-| Lazy allocation | R3 | Direct conceptual match to the archived 2020 lab; our handler also integrates COW and swap. |
-| COW fork | R4 | Direct conceptual match; our cowtest is a project-specific test, not MIT's complete grader. |
-| memstat | R5 | Related to sysinfo; our API has seven memory fields rather than the same sysinfo structure. |
-| Swap and replacement | R6 and R7 | Standard VM mechanisms and policy references; no identical MIT swap assignment is asserted. |
-| xv6 foundation | R1, R2 and R12 | Official operating-system source and book; inherited copyright and history are retained. |
+2. R. Cox, F. Kaashoek, and R. Morris, xv6: a simple, Unix-like teaching operating system, rev. 5, MIT, 2025. [Primary source](https://pdos.csail.mit.edu/6.1810/2025/xv6/book-riscv-rev5.pdf). Report use: Sections 2.1 and 4.2.
 
-## Verified primary sources
+3. RISC-V International, The RISC-V Instruction Set Manual, Volume II: Privileged Architecture, Supervisor-Level ISA. [Primary source](https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html). Report use: Sections 2.1, 4.3 and 4.4.
 
-### R1 MIT PDOS xv6 for RISC V source repository
+4. MIT PDOS, “Lab: xv6 lazy page allocation,” 6.S081, 2020. [Primary source](https://pdos.csail.mit.edu/6.S081/2020/labs/lazy.html). Report use: Sections 2.2 and 4.3.
 
-[MIT PDOS xv6 for RISC V source repository](https://github.com/mit-pdos/xv6-riscv)
+5. MIT PDOS, “Lab: Copy-on-Write Fork for xv6,” 6.1810, 2025. [Primary source](https://pdos.csail.mit.edu/6.1810/2025/labs/cow.html). Report use: Sections 2.2, 4.3 and 5.4.
 
-The upstream operating system and retained MIT license. The project's eager baseline is pinned to c4de4b0 and checkpoint v0.0; newer upstream versions differ.
+6. R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, Operating Systems: Three Easy Pieces, ch. 21, “Beyond Physical Memory: Mechanisms.” [Primary source](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-beyondphys.pdf). Report use: Section 4.4.
 
-### R2 xv6 a simple Unix like teaching operating system
+7. R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, Operating Systems: Three Easy Pieces, ch. 22, “Beyond Physical Memory: Policies.” [Primary source](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-beyondphys-policy.pdf). Report use: Sections 4.4 and 5.3.
 
-[xv6 a simple Unix like teaching operating system](https://mit-pdos.github.io/xv6-riscv-book/)
+8. P. J. Denning, “The working set model for program behavior,” Communications of the ACM, vol. 11, no. 5, pp. 323–333, May 1968, doi: 10.1145/363095.363141. [Primary source](https://doi.org/10.1145/363095.363141). Report use: Sections 2.2 and 5.3.
 
-Official book by Russ Cox, Frans Kaashoek and Robert Morris. Background reading for page tables, traps, allocation, locking and the xv6 source.
+9. L. A. Belady, R. A. Nelson, and G. S. Shedler, “An anomaly in space-time characteristics of certain programs running in a paging machine,” Communications of the ACM, vol. 12, no. 6, pp. 349–353, Jun. 1969, doi: 10.1145/363011.363155. [Primary source](https://research.ibm.com/publications/an-anomaly-in-space-time-characteristics-of-certain-programs-running-in-a-paging-machine). Report use: Sections 2.2 and 5.3.
 
-### R3 MIT 6 S081 2020 lazy page allocation lab
+10. R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, Operating Systems: Three Easy Pieces, ch. 28, “Locks.” [Primary source](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks.pdf). Report use: Section 4.5.
 
-[MIT 6 S081 2020 lazy page allocation lab](https://pdos.csail.mit.edu/6.S081/2020/labs/lazy.html)
+11. R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, Operating Systems: Three Easy Pieces, ch. 30, “Condition Variables.” [Primary source](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-cv.pdf). Report use: Section 4.5.
 
-Direct assignment correspondence for deferred sbrk allocation and fault-driven zero-filled pages. This report uses the archived year explicitly.
+12. MIT PDOS, “Lab: System calls,” 6.S081, 2020. [Primary source](https://pdos.csail.mit.edu/6.S081/2020/labs/syscall.html). Report use: Sections 4.4 and 4.6.
 
-### R4 MIT 6 1810 2025 copy on write fork lab
+13. MIT PDOS, “Lab: Traps,” 6.S081, 2020. [Primary source](https://pdos.csail.mit.edu/6.S081/2020/labs/traps.html). Report use: Section 4.6.
 
-[MIT 6 1810 2025 copy on write fork lab](https://pdos.csail.mit.edu/6.1810/2025/labs/cow.html)
+14. MIT PDOS, “RISC-V Calling Convention,” lecture slides, 2024. [Primary source](https://pdos.csail.mit.edu/6.828/2024/lec/l-riscv-cc-slides.pdf). Report use: Section 4.6.
 
-Direct assignment correspondence for read-only sharing, COW recovery, reference counts and copyout integration. Our custom cowtest is not MIT's full lab grader.
+15. Free Software Foundation, “RISC-V Options,” GCC online documentation. [Primary source](https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html). Report use: Section 4.1.
 
-### R5 MIT 6 S081 2020 system calls lab
+16. MIT PDOS, “Lab: Multithreading,” 6.1810, 2023. [Primary source](https://pdos.csail.mit.edu/6.1810/2023/labs/thread.html). Report use: Sections 2.2 and 4.5.
 
-[MIT 6 S081 2020 system calls lab](https://pdos.csail.mit.edu/6.S081/2020/labs/syscall.html)
+17. F. J. Corbató, “A Paging Experiment with the Multics System,” Project MAC memorandum MAC-M-384, Jul. 8, 1968. [Primary source](https://people.csail.mit.edu/saltzer/Multics/MHP-Saltzer-060508/bookcases/M00s/M0104%20074-12%29.PDF). Report use: Section 4.4.
 
-The sysinfo exercise is related to kernel information collection. Our seven-field memstat API is a project-specific extension, not the identical sysinfo interface.
+18. H. Franke, R. Russell, and M. Kirkwood, “Fuss, Futexes and Furwocks: Fast Userlevel Locking in Linux,” Ottawa Linux Symposium, 2002. [Primary source](https://www.kernel.org/doc/ols/2002/ols2002-pages-479-495.pdf). Report use: Section 4.5.
 
-### R6 OSTEP chapter 21 Beyond Physical Memory Mechanisms
+19. IEEE and The Open Group, “sigaction,” POSIX Programmer’s Manual, authorized specification reprint. [Primary source](https://man7.org/linux/man-pages/man3/sigaction.3p.html). Report use: Section 4.6.
 
-[OSTEP chapter 21 Beyond Physical Memory Mechanisms](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-beyondphys.pdf)
+20. The Linux Kernel Documentation, “Memory Management Concepts.” [Primary source](https://cdn.kernel.org/doc/html/latest/admin-guide/mm/concepts.html). Report use: Section 2.2.
 
-Primary textbook reference by Remzi H Arpaci-Dusseau and Andrea C Arpaci-Dusseau for disk-backed memory and page-in/page-out mechanisms.
+21. M. Kerrisk, “fork(2),” Linux man-pages. [Primary source](https://man7.org/linux/man-pages/man2/fork.2.html). Report use: Section 2.2.
 
-### R7 OSTEP chapter 22 Beyond Physical Memory Policies
-
-[OSTEP chapter 22 Beyond Physical Memory Policies](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-beyondphys-policy.pdf)
-
-Primary textbook reference for replacement-policy reasoning including FIFO and approximations based on recent use. The project results do not establish universal policy superiority.
-
-### R8 RISC V supervisor level ISA version 1 13
-
-[RISC V supervisor level ISA version 1 13](https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html)
-
-Official specification for page-table permission and software bits, accessed bits, page-fault causes and SFENCE.VMA. The reference is pinned to the published 20260120 documentation version.
-
-### R9 GCC RISC V target options
-
-[GCC RISC V target options](https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html)
-
-Official documentation for the march target selection used in the recorded build-compatibility repair.
-
-### R10 Microsoft Learn Windows Subsystem for Linux overview
-
-[Microsoft Learn Windows Subsystem for Linux overview](https://learn.microsoft.com/en-us/windows/wsl/about)
-
-Primary environment reference for Ubuntu on Windows and WSL2's managed Linux-kernel virtual machine; xv6 runs separately inside QEMU.
-
-### R11 Current xv6 book page faults chapter
-
-[Current xv6 book page faults chapter](https://mit-pdos.github.io/xv6-riscv-book/pgfault.html)
-
-Explains the current upstream lazy allocation path. This is why our historical eager checkpoint, rather than a claim about all current xv6 releases, is the comparison reference.
-
-### R12 MIT PDOS xv6 RISC V book source repository
-
-[MIT PDOS xv6 RISC V book source repository](https://github.com/mit-pdos/xv6-riscv-book)
-
-Official source repository for the xv6 book; included as a second authentic MIT repository reference rather than an unverified student solution.
-
-### R13 MIT 6 S081 2020 utilities lab and starter repository provenance
-
-[MIT 6 S081 2020 utilities lab and starter repository provenance](https://pdos.csail.mit.edu/6.S081/2020/labs/util.html)
-
-Documents the course-specific xv6-labs-2020 starter repository and explains its difference from the book's xv6-riscv source. Its historical clone command is not a project build instruction.
-
-## What this repository claims
-
-This is an educational implementation and integration on MIT xv6, using the supplied project guides with assisted development and debugging. The contribution is the project code, combined subsystem behavior, test design, recorded repairs and evidence. The techniques are established. References were added during the draft review; no audit establishing code lineage from unrelated student solution repositories is claimed.
-
-Use official repositories and course pages for provenance. Preserve the original LICENSE. Keep historical v0.0/v0.4 comparisons distinct from current main and do not label custom tests as official MIT grading results.
-
-## Research papers and their role
-
-These are literature references added during the comparison revision. They provide conceptual context; this project does not claim to reproduce their experiments or implement an exact working-set scheduler.
-
-### R14 Denning 1968 The working set model for program behavior
-
-[Denning 1968 The working set model for program behavior](https://doi.org/10.1145/363095.363141)
-
-Peter J. Denning. Communications of the ACM 11(5), 323-333, May 1968. DOI 10.1145/363095.363141. Research background for locality and the pages actively used by a computation. The full author-hosted paper was checked. Our sparse and hot/cold tests are illustrations of access patterns; the project does not implement Denning's working-set scheduler.
-
-### R15 Belady, Nelson and Shedler 1969 An anomaly in space-time characteristics of certain programs running in a paging machine
-
-[Belady, Nelson and Shedler 1969 An anomaly in space-time characteristics of certain programs running in a paging machine](https://research.ibm.com/publications/an-anomaly-in-space-time-characteristics-of-certain-programs-running-in-a-paging-machine)
-
-L. A. Belady, R. A. Nelson and G. S. Shedler. Communications of the ACM, June 1969. Publisher DOI 10.1145/363011.363155 is linked by the IBM Research record. The primary record and abstract were checked; the ACM full text was unavailable through the research tool. It provides historical context for FIFO policy anomalies. Our experiments do not reproduce that paper's anomaly experiment.
-
-The final report describes file purposes, important functions, measured behavior and mapped academic references without reproducing full source files. Project code and recorded output are implementation evidence; the references explain established mechanisms.
-
-## Threads tracing signals and debugger context
-
-- [MIT multithreading lab 2023](https://pdos.csail.mit.edu/6.1810/2023/labs/thread.html): related user-level switching exercise, distinct from this project's kernel-scheduled shared-address-space members.
-- [MIT traps lab 2020](https://pdos.csail.mit.edu/6.S081/2020/labs/traps.html): frame tracing and user handler restoration context; our signal framework is not the identical sigalarm assignment.
-- [MIT system calls lab 2020](https://pdos.csail.mit.edu/6.S081/2020/labs/syscall.html): direct conceptual correspondence for mask-based syscall tracing; our memstat differs from sysinfo.
-- [OSTEP Locks](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks.pdf) and [Condition Variables](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-cv.pdf): synchronization context, including predicate loops.
-- [RISC-V ELF psABI](https://riscv-non-isa.github.io/riscv-elf-psabi-doc/): calling convention and frame records used by the debugger.
-
-Reviewed 2 November 2026. Existing MIT license and history are retained. No full POSIX implementation, official MIT grading result or paper experiment replication is claimed.
+22. D. S. Miller, “Cache and TLB Flushing Under Linux,” The Linux Kernel Documentation. [Primary source](https://docs.kernel.org/core-api/cachetlb.html). Report use: Section 6.

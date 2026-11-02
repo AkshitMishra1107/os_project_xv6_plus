@@ -1,8 +1,11 @@
 * text=auto eol=lf
 *.png binary
 *.docx binary
+*.zip binary
 # Preserve recorded console output rather than normalizing its bytes.
 docs/results/**/outputs/** -text -whitespace
+# Hash manifests cover every byte of this reproducible evidence package.
+docs/results/validation-upgrade/** -text -whitespace
 # Local legacy evidence may still exist when merging older feature branches.
 docs/memory/evidence/** -text -whitespace
 docs/threads/*.txt -text -whitespace

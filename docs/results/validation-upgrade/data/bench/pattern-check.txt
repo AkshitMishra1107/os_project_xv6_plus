@@ -1,0 +1,1 @@
+pattern-check: clean pages passed; corruptions detected=4/4 blocks

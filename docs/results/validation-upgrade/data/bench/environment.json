@@ -1,0 +1,8 @@
+{
+  "gcc": "riscv64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "qemu": "QEMU emulator version 10.2.1 (Debian 1:10.2.1+ds-1ubuntu3.2)",
+  "kernel": "6.18.54.1-microsoft-standard-WSL2",
+  "source_revision": "7f925b51d65d6dd3d2fa898e7ac97ff34eb03d78",
+  "source_clean": true,
+  "timebase_hz": 10000000
+}

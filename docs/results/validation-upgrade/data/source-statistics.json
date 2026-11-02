@@ -1,0 +1,416 @@
+{
+  "insertions": 4711,
+  "deletions": 197,
+  "files": {
+    "Makefile": "M",
+    "kernel/console.c": "M",
+    "kernel/dbg.c": "A",
+    "kernel/dbg.h": "A",
+    "kernel/defs.h": "M",
+    "kernel/exec.c": "M",
+    "kernel/futex.c": "A",
+    "kernel/kalloc.c": "M",
+    "kernel/main.c": "M",
+    "kernel/memlayout.h": "M",
+    "kernel/memstat.h": "A",
+    "kernel/param.h": "M",
+    "kernel/pgfault.c": "A",
+    "kernel/pipe.c": "M",
+    "kernel/proc.c": "M",
+    "kernel/proc.h": "M",
+    "kernel/riscv.h": "M",
+    "kernel/sigdefs.h": "A",
+    "kernel/signal.c": "A",
+    "kernel/spinlock.c": "M",
+    "kernel/swap.c": "A",
+    "kernel/swapaudit.h": "A",
+    "kernel/syscall.c": "M",
+    "kernel/syscall.h": "M",
+    "kernel/sysfile.c": "M",
+    "kernel/sysproc.c": "M",
+    "kernel/trampoline.S": "M",
+    "kernel/trap.c": "M",
+    "kernel/vm.c": "M",
+    "user/baseline.c": "A",
+    "user/cowtest.c": "A",
+    "user/dbg.c": "A",
+    "user/dbglife.c": "A",
+    "user/dbgmini.c": "A",
+    "user/dbgtarget.c": "A",
+    "user/exittest.c": "A",
+    "user/finaldemo.c": "A",
+    "user/forkbench.c": "A",
+    "user/futextest.c": "A",
+    "user/hotcold.c": "A",
+    "user/kthreadtest.c": "A",
+    "user/lazytest.c": "A",
+    "user/libtest.c": "A",
+    "user/memhog.c": "A",
+    "user/memstat.c": "A",
+    "user/pagebench.c": "A",
+    "user/pagepattern.h": "A",
+    "user/philosophers.c": "A",
+    "user/prodcons.c": "A",
+    "user/racetest.c": "A",
+    "user/semtest.c": "A",
+    "user/sig.c": "A",
+    "user/sig.h": "A",
+    "user/sigtest.c": "A",
+    "user/speedup.c": "A",
+    "user/swapcheck.c": "A",
+    "user/swapfork.c": "A",
+    "user/thread.c": "A",
+    "user/thread.h": "A",
+    "user/threadcheck.h": "A",
+    "user/threadlife.c": "A",
+    "user/threadmem.c": "A",
+    "user/threadswap.c": "A",
+    "user/threadtest.c": "A",
+    "user/trace.c": "A",
+    "user/tracethread.c": "A",
+    "user/user.h": "M",
+    "user/usys.pl": "M"
+  },
+  "numstat": [
+    [
+      "48",
+      "4",
+      "Makefile"
+    ],
+    [
+      "5",
+      "0",
+      "kernel/console.c"
+    ],
+    [
+      "184",
+      "0",
+      "kernel/dbg.c"
+    ],
+    [
+      "16",
+      "0",
+      "kernel/dbg.h"
+    ],
+    [
+      "44",
+      "0",
+      "kernel/defs.h"
+    ],
+    [
+      "9",
+      "0",
+      "kernel/exec.c"
+    ],
+    [
+      "95",
+      "0",
+      "kernel/futex.c"
+    ],
+    [
+      "81",
+      "21",
+      "kernel/kalloc.c"
+    ],
+    [
+      "4",
+      "1",
+      "kernel/main.c"
+    ],
+    [
+      "10",
+      "1",
+      "kernel/memlayout.h"
+    ],
+    [
+      "14",
+      "0",
+      "kernel/memstat.h"
+    ],
+    [
+      "2",
+      "1",
+      "kernel/param.h"
+    ],
+    [
+      "132",
+      "0",
+      "kernel/pgfault.c"
+    ],
+    [
+      "67",
+      "22",
+      "kernel/pipe.c"
+    ],
+    [
+      "373",
+      "78",
+      "kernel/proc.c"
+    ],
+    [
+      "17",
+      "0",
+      "kernel/proc.h"
+    ],
+    [
+      "8",
+      "0",
+      "kernel/riscv.h"
+    ],
+    [
+      "14",
+      "0",
+      "kernel/sigdefs.h"
+    ],
+    [
+      "137",
+      "0",
+      "kernel/signal.c"
+    ],
+    [
+      "8",
+      "0",
+      "kernel/spinlock.c"
+    ],
+    [
+      "492",
+      "0",
+      "kernel/swap.c"
+    ],
+    [
+      "21",
+      "0",
+      "kernel/swapaudit.h"
+    ],
+    [
+      "100",
+      "1",
+      "kernel/syscall.c"
+    ],
+    [
+      "26",
+      "0",
+      "kernel/syscall.h"
+    ],
+    [
+      "9",
+      "2",
+      "kernel/sysfile.c"
+    ],
+    [
+      "101",
+      "4",
+      "kernel/sysproc.c"
+    ],
+    [
+      "5",
+      "10",
+      "kernel/trampoline.S"
+    ],
+    [
+      "28",
+      "18",
+      "kernel/trap.c"
+    ],
+    [
+      "235",
+      "34",
+      "kernel/vm.c"
+    ],
+    [
+      "15",
+      "0",
+      "user/baseline.c"
+    ],
+    [
+      "58",
+      "0",
+      "user/cowtest.c"
+    ],
+    [
+      "391",
+      "0",
+      "user/dbg.c"
+    ],
+    [
+      "38",
+      "0",
+      "user/dbglife.c"
+    ],
+    [
+      "29",
+      "0",
+      "user/dbgmini.c"
+    ],
+    [
+      "31",
+      "0",
+      "user/dbgtarget.c"
+    ],
+    [
+      "28",
+      "0",
+      "user/exittest.c"
+    ],
+    [
+      "113",
+      "0",
+      "user/finaldemo.c"
+    ],
+    [
+      "51",
+      "0",
+      "user/forkbench.c"
+    ],
+    [
+      "100",
+      "0",
+      "user/futextest.c"
+    ],
+    [
+      "57",
+      "0",
+      "user/hotcold.c"
+    ],
+    [
+      "104",
+      "0",
+      "user/kthreadtest.c"
+    ],
+    [
+      "61",
+      "0",
+      "user/lazytest.c"
+    ],
+    [
+      "97",
+      "0",
+      "user/libtest.c"
+    ],
+    [
+      "78",
+      "0",
+      "user/memhog.c"
+    ],
+    [
+      "24",
+      "0",
+      "user/memstat.c"
+    ],
+    [
+      "71",
+      "0",
+      "user/pagebench.c"
+    ],
+    [
+      "27",
+      "0",
+      "user/pagepattern.h"
+    ],
+    [
+      "43",
+      "0",
+      "user/philosophers.c"
+    ],
+    [
+      "66",
+      "0",
+      "user/prodcons.c"
+    ],
+    [
+      "76",
+      "0",
+      "user/racetest.c"
+    ],
+    [
+      "44",
+      "0",
+      "user/semtest.c"
+    ],
+    [
+      "17",
+      "0",
+      "user/sig.c"
+    ],
+    [
+      "9",
+      "0",
+      "user/sig.h"
+    ],
+    [
+      "92",
+      "0",
+      "user/sigtest.c"
+    ],
+    [
+      "43",
+      "0",
+      "user/speedup.c"
+    ],
+    [
+      "29",
+      "0",
+      "user/swapcheck.c"
+    ],
+    [
+      "75",
+      "0",
+      "user/swapfork.c"
+    ],
+    [
+      "173",
+      "0",
+      "user/thread.c"
+    ],
+    [
+      "22",
+      "0",
+      "user/thread.h"
+    ],
+    [
+      "7",
+      "0",
+      "user/threadcheck.h"
+    ],
+    [
+      "78",
+      "0",
+      "user/threadlife.c"
+    ],
+    [
+      "83",
+      "0",
+      "user/threadmem.c"
+    ],
+    [
+      "56",
+      "0",
+      "user/threadswap.c"
+    ],
+    [
+      "41",
+      "0",
+      "user/threadtest.c"
+    ],
+    [
+      "18",
+      "0",
+      "user/trace.c"
+    ],
+    [
+      "29",
+      "0",
+      "user/tracethread.c"
+    ],
+    [
+      "26",
+      "0",
+      "user/user.h"
+    ],
+    [
+      "26",
+      "0",
+      "user/usys.pl"
+    ]
+  ]
+}

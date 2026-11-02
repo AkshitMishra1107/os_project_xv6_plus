@@ -1,84 +1,37 @@
 # Memory extensions
 
-This page explains the validated memory work through tag `v0.4`. The [results](../results/memory/README.md) compare recorded checkpoints. Future thread and debugger capabilities are not included in these completed-feature claims.
+The [current validation](../results/validation-upgrade/README.md) covers the integrated source. [Historical memory results](../results/memory/README.md) retain the earlier checkpoints.
 
-## Lazy allocation
+## Deferred heap backing
 
-In the eager baseline, `sbrk(n)` tried to allocate physical pages immediately. Our implementation grows the process's virtual size first. A load or store to an untouched page enters the fault handler, which validates the address, allocates a page, zeroes it and installs a user mapping. An allocation failure or an illegal access ends the process appropriately.
+The eager reference's `sys_sbrk` calls `growproc` to allocate positive heap growth immediately. The project validates and reserves the leader's virtual range first. `handle_page_fault` in the created `kernel/pgfault.c` zeroes and maps a 4096-byte frame on valid first use. `kernel/vm.c` tolerates lazy holes and recovers syscall user buffers. An invalid access retains its protection failure.
 
-```mermaid
-flowchart TD
-    A["Program calls sbrk"] --> B["Reserve virtual address range"]
-    B --> C["First load or store to an untouched page"]
-    C --> D["Page fault and address validation"]
-    D --> E["Allocate and zero a physical page"]
-    E --> F["Install mapping and retry access"]
-```
-
-**Added capability:** sparse programs can reserve a large range while backing only accessed pages. The successful 200 MB reservation is a virtual reservation; it does not show 200 MB resident in RAM.
-
-**Code:** [`sys_sbrk`](../../kernel/sysproc.c), [`handle_page_fault`](../../kernel/pgfault.c), and mapping/unmapping helpers in [`vm.c`](../../kernel/vm.c). **Demonstrations:** [`baseline.c`](../../user/baseline.c) and [`lazytest.c`](../../user/lazytest.c).
+`baseline.c` requests 200 MiB without touching all of it. `lazytest.c` reserves 256 MiB, explicitly writes 656 pages, and checks zero fill and lazy buffers. This measures deferred commitment. The initially cloned newer upstream already offered `sbrklazy`; its ordinary `sbrk` remained eager. The historical reference and API are identified in the version table.
 
 ## Copy-on-write fork
 
-Our earlier fork path copied resident user pages into the child. COW instead maps the same physical page into both processes. Originally writable pages lose write permission and gain a software COW flag. Reference counts record sharing. On a write fault, the kernel copies the page if multiple owners remain; with one owner, it can restore write permission directly. Parent and child retain independent contents after a write.
+Original `uvmcopy` copies resident frames. The modified path shares eligible frames, clears write permission, sets `PTE_COW` and increments references. `kernel/kalloc.c` frees a frame at its final release. A write either copies shared backing or restores write permission for its final owner. `copyout` follows the same isolation rule.
 
-```mermaid
-flowchart TD
-    A["fork"] --> B["Parent and child share physical pages"]
-    B --> C["Writable pages become read-only COW mappings"]
-    C --> D["A process writes and faults"]
-    D --> E{"More than one owner?"}
-    E -->|Yes| F["Copy page and update writer mapping"]
-    E -->|No| G["Restore write permission"]
-    F --> H["Retry write with independent contents"]
-    G --> H
-```
+`cowtest.c` checks an 80 MiB parent, inherited values, private child writes and unchanged parent data. Revised `forkbench.c` compares ten read-only or write-all children against the same 20 MiB parent. `FORK_COW=0/1` changes only eager/private versus COW fork selection in the same source. Full child and parent data checks accompany microsecond timing. Multithreaded parents use private copying for translation safety.
 
-**Added capability:** fork avoids an immediate full copy, helping large processes fork and reducing the cost of fork followed by exit or exec. This does not remove the cost of pages that are later privately written.
+## Paging and victim selection
 
-**Code:** [`uvmcopy` and user-copy helpers](../../kernel/vm.c), [`PTE_COW`](../../kernel/riscv.h), [`kref_inc`, `kref_get` and `kfree`](../../kernel/kalloc.c), and [`fault handling`](../../kernel/pgfault.c). **Demonstrations:** [`cowtest.c`](../../user/cowtest.c), [`forkbench.c`](../../user/forkbench.c), and [`swapfork.c`](../../user/swapfork.c).
+`RAM_MB=8` limits xv6's managed physical range, including kernel overhead. QEMU still exposes 128 MiB. `kernel/swap.c` tracks eligible frames and 4096 slots in a fixed 16 MiB disk area. Each 4 KiB page uses four 1024-byte blocks. Eviction replaces a resident PTE with a slot record; a later fault restores previous contents. Disk I/O runs outside `ptlock`.
 
-## Disk swapping and replacement policies
+- Policy 1, FIFO: oldest eligible insertion sequence.
+- Policy 2, Clock: circular hand, accessed-bit clearing and second chances.
+- Policy 3, seeded Random: bounded random frame probes with a scan fallback.
 
-Lazy allocation alone cannot provide physical pages once usable RAM is exhausted. The swap engine tracks eligible resident pages. Under pressure it selects a victim, writes its 4 KB contents into the reserved disk area, replaces its mapping with a swap-slot entry and releases the physical page. A later access faults the page back into RAM with its permissions restored.
+Shared COW, kernel and stale frame records are ineligible. Eviction requires one CPU; SMP builds run parallel workers with eviction disabled until remote TLB shootdown is implemented.
 
-```mermaid
-flowchart TD
-    A["Low free-page count"] --> B["Choose eligible victim with FIFO or Clock"]
-    B --> C["Write page to swap slot"]
-    C --> D["Keep slot in PTE and release physical page"]
-    D --> E["Later access faults on swapped mapping"]
-    E --> F["Read page into RAM and restore mapping"]
-```
+`memhog.c` fills and verifies **all 4096 bytes per page** through the position-dependent pattern in `pagepattern.h`. `swapfork.c` checks inherited values and private writes under pressure. `threadswap.c` checks shared swapped mappings. `finaldemo 4` combines three real workers, 12 MiB of fully checked data, a barrier, protected totals and a signal while paging runs.
 
-FIFO selects the oldest tracked eligible page. Clock examines the accessed bit, gives a recently used page another chance, and advances its hand. Shared COW pages are excluded from eviction in this implementation; the engine does not provide arbitrary multiprocessor swapping.
+`pagebench.c` compares sequential, uniform, stable-hot and moving-hot reference streams with identical seeded inputs for all policies. It records recovery calls, swap operations, elapsed microseconds and a checked checksum. Full-page verification occurs after the timed phase. The independent runner also replays FIFO, Clock, LRU and optimal models at a separately labelled fixed frame budget.
 
-**Added capability:** the recorded 12 MB workload completes with 8 MB of usable xv6 RAM and a 16 MB swap area. Swapping trades disk I/O for additional working-set capacity; it does not make disk as fast as RAM or remove the finite capacity limit.
+## Counters and cleanup audit
 
-**Code:** [`swap.c`](../../kernel/swap.c), [`PTE_SWAP` and slot encoding](../../kernel/riscv.h), [`page faults`](../../kernel/pgfault.c), [`memory limit`](../../kernel/memlayout.h), and image/configuration rules in the [`Makefile`](../../Makefile). **Demonstrations:** [`memhog.c`](../../user/memhog.c), [`swapfork.c`](../../user/swapfork.c), [`hotcold.c`](../../user/hotcold.c).
+`memstat.h`, `sys_memstat`, `memstat_fill` and `user/memstat.c` expose recovery calls, lazy allocations, actual COW copies, swap outs, swap ins, free pages and slots used. The first five accumulate; the last two describe current resources.
 
-## Memory statistics
+`swapcheck.c` and `swapaudit.h` add a complete one-CPU bitmap/PTE reconciliation. Under the swap lock and `ptlock`, the audit deduplicates shared page tables and reports owners, virtual addresses, orphan slots, missing backing, duplicate references and invalid records. Recorded remaining slots belong to live sleeping `init` mappings; the checks report zero reconciliation errors. Swap-in and unmap/reaping release slots when their data is no longer needed.
 
-`memstat` exposes page-fault handler calls, lazy allocations, actual COW page copies, swap outs, swap ins, free pages and used swap slots. Counters are cumulative since boot. A COW write that only restores write permission does not count as an actual page copy.
-
-```mermaid
-flowchart LR
-    A["Memory events"] --> B["Kernel counters and resource counts"]
-    B --> C["memstat syscall 22"]
-    C --> D["Snapshot copied to user command"]
-```
-
-**Added capability:** programs and demonstrations can report which memory mechanisms ran and inspect resource recovery. These counters do not directly measure peak resident memory or elapsed time.
-
-**Code:** [`memstat.h`](../../kernel/memstat.h), [`memstat_fill`](../../kernel/swap.c), [`sys_memstat`](../../kernel/sysproc.c), syscall wiring in [`syscall.c`](../../kernel/syscall.c), and [`user/memstat.c`](../../user/memstat.c).
-
-## Integration repairs
-
-User-memory copies can fault and require allocation or swap I/O. The final memory milestone stages pipe writes and performs pipe read user copies outside the pipe spinlock. Wait cleanup releases child memory and locks before copying status into the parent. These changes let the memory mechanisms operate through existing system calls. They are covered by the final full regression result.
-
-**Code:** [`pipe.c`](../../kernel/pipe.c), [`wait` in proc.c](../../kernel/proc.c), and the unchanged regression suite [`usertests.c`](../../user/usertests.c).
-
-## References and presentation
-
-Lazy allocation and COW correspond to MIT labs; memstat is related to the sysinfo exercise but has a different interface. Swap and policy design are supported by standard VM references. See the [annotated primary references](../references.md), [draft memory report](../reports/xv6-plus-final-report.docx), and [teacher evidence guide](../presentation/memory.md).
+See [tools/README.md](../../tools/README.md) for reproducible full regression, integrity, policy, fork and scaling experiments, with raw logs and native QEMU captures.

@@ -1,28 +1,26 @@
 # xv6 Plus
 
-RISC-V xv6 extended with lazy allocation, copy-on-write fork, disk swapping, kernel threads, futex synchronization, syscall tracing, user signals and an in-guest debugger.
+RISC-V xv6 extended with lazy allocation, copy-on-write fork, disk paging, kernel threads, futex synchronization, syscall tracing, user signals and an in-guest debugger.
 
-**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The 40-page report explains each feature's original behavior, changed functions and modules, implementation mechanism, benefit and comparison justification. It includes 17 actual input/output captures, measured-change tables, tests and mapped academic references without full C-file listings.
+Start with the **[project report](docs/reports/xv6-plus-final-report.docx)**, [architecture and source map](docs/architecture.md), and **[current validation](docs/results/validation-upgrade/README.md)**. The report explains what changed, how it works, why each comparison matters and the observed costs and benefits.
 
-## What the project adds
+## What changed
 
-| Area | Historical eager baseline | xv6 Plus |
+| Area | Historical eager reference | Integrated implementation |
 |---|---|---|
-| Allocation | Back positive heap growth immediately | Reserve addresses; zero and map pages on first use |
-| Process creation | Copy resident pages at fork | Share COW frames for single-member fork; copy on private write |
-| Memory pressure | No disk-backed paging | FIFO/Clock swapping with a fixed 16 MiB backing area |
-| Observation | No project memory API | Seven-field `memstat` command and syscall |
-| Shared execution | Separate process address spaces | Up to eight kernel-scheduled members share a PID, heap and page table |
+| Heap | Back all positive growth immediately | Reserve first; zero and map on valid first access |
+| Fork | Copy resident pages | COW sharing for single-member fork; private copies for multithreaded fork |
+| Pressure | Allocation fails without backing | FIFO, Clock or seeded Random disk paging on one CPU |
+| Diagnostics | No project memory interface | Seven counters plus bitmap/PTE swap-owner audit |
+| Shared execution | Separate process mappings | Up to eight kernel-scheduled group members with shared mappings |
 | Coordination | No project thread library | Futex-backed mutexes, conditions and semaphores |
-| Syscalls | No selectable trace interface | Masked PID/name/return tracing, including thread inheritance |
-| Asynchronous control | Uncatchable `kill` only | User handlers, pending signals, ignore/default action and restoration |
-| Debugging | No in-guest debugger | Child exec/breakpoint stops, memory/register inspection and symbolized frames |
+| Observation | No selective trace command | Masked syscall results with thread inheritance |
+| Control | Termination through kill | User handlers, pending signals, pause and restoration |
+| Debugging | External tools only | Opted-in child stops, inspection, breakpoints and symbolized frames |
 
-The reference is **project v0.0**, based on historical MIT revision `c4de4b0`. Current upstream xv6 differs and already includes lazy allocation. This educational project does not claim new algorithms, POSIX compliance, or a pass from MIT's course grader.
+The reference is project v0.0 on historical MIT code. The initially cloned newer upstream already has opt-in `sbrklazy`; ordinary `sbrk` is eager there. [Versions](docs/versions.md) identify the compared checkpoints. Standard algorithms and MIT-lab correspondence are attributed in [references](docs/references.md).
 
-## Build and demonstrate
-
-Use Ubuntu/WSL2 with RISC-V GCC/binutils, QEMU RISC-V, make, Git and Perl.
+## Build and try it
 
 ```bash
 git clone https://github.com/AkshitMishra1107/os_project_xv6_plus.git
@@ -31,41 +29,36 @@ make clean
 make qemu CPUS=3 RAM_MB=128 SWAP_POLICY=1
 ```
 
-At the xv6 prompt try `lazytest`, `cowtest`, `racetest`, `prodcons`, `trace 32 cat README`, `sigtest`, `dbgmini` and `finaldemo`. For interactive debugging use `dbg dbgtarget`, then `break inner`, `run`, `bt`, `regs`, `continue`, `quit`. Run `usertests` for the inherited regression suite. Exit QEMU with Ctrl+A, then X.
+Run `lazytest`, `cowtest`, `racetest`, `prodcons`, `sigtest`, `dbgmini` and `finaldemo` at the xv6 prompt. For interactive inspection use `dbg dbgtarget`, then `break inner`, `run`, `bt`, `regs` and `continue`. Exit QEMU with Ctrl+A then X.
 
-**Paging pressure:** rebuild clean with `CPUS=1 RAM_MB=8 SWAP_POLICY=1`, then run `memhog 4`, `memhog 12`, `swapfork`, `threadswap`, `hotcold` and `memstat`. Policy 2 selects Clock. QEMU exposes 128 MiB; RAM_MB limits the range managed by xv6. Always clean when changing CPU/RAM/policy definitions.
+For pressure, rebuild clean with `CPUS=1 RAM_MB=8 SWAP_POLICY=1`; run `memhog 12`, `swapfork`, `threadswap`, `swapcheck` and `finaldemo 4`. Policy 2 is Clock and 3 is seeded Random. QEMU exposes 128 MiB; RAM_MB limits the managed range, including kernel overhead. One page is 4096 bytes and the swap area is 16 MiB.
 
-## Evidence and measured improvements
+## Checked results
 
-- A historical 200 MiB eager request failed; lazy reservation succeeded. Reservation does not mean all 200 MiB are resident.
-- The 80 MiB custom COW test changed from fork failure to successful isolation.
-- A matched five-run comparison of the same 50-cycle fork workload observed medians of 44 ticks before the extensions and 7 afterwards: **84.1% fewer median guest ticks for this loop**. This is not a general application speedup.
-- A checked 12 MiB workload failed under an 8 MiB limit before swap and completed with zero mismatches after swap.
-- Three fresh guest boots per policy recorded median hotcold paging totals of 16013 transfers for FIFO and 15375 for Clock: **3.98% fewer transfers for this phase**, not a measured elapsed-time improvement.
-- Thread tests verify protected counter 200000, queue total 10100, two-permit bounds, lifecycle and shared-memory checks.
-- Fresh [combined validation](docs/results/final-integration/README.md) checks the integrated system and its debugger lifecycle repairs. Historical subsystem evidence stays in [memory results](docs/results/memory/README.md), [thread results](docs/results/threads/README.md) and [signals/debugger results](docs/results/signals-debugger/README.md).
+- All four full `usertests` runs pass: one-CPU FIFO, Clock and Random with nonzero paging activity, and three-CPU SMP.
+- A 200 MiB ordinary reservation changes from failure to success; the sparse test touches 656 pages. The 80 MiB COW test checks fork capacity and private writes.
+- The 12 MiB pressure workload checks every byte of all 3072 pages under an 8 MiB managed limit. The four-block corruption negative control detects 4/4 corruptions.
+- Swap audits map the remaining two slots to live `init` pages and report zero orphan, missing, duplicate or invalid references.
+- Controlled unprotected updates produce 1000 instead of 4000; mutex protection produces 4000.
+- The combined one-CPU test runs three actual workers, 12 MiB of full-page checked data, synchronization and a signal while paging is active.
 
-The [matched comparison study](docs/results/comparison-study/README.md) retains all samples, actual command records, screenshots, source checks and measurement limits. Its fresh three-CPU full `usertests` run passed. The race and short parallel workloads did not establish a numerical speed improvement; those observations are reported directly.
+The [current comparison tables](docs/results/validation-upgrade/README.md) include 60 fresh-guest paging cases across four access patterns, 20 same-source COW on/off cases including write-all children, and 15 equal-work parallel cases. Raw console bytes, native QEMU captures, all samples and trace/model checks are organized together. [Reproduce the tests](tools/README.md).
 
-**Boundaries:** eviction is one-CPU only; SMP builds do not swap. Signals are a compact Unix-inspired subset. Debugging controls a direct opted-in single-context child. Remaining occupied slots in historical pressure runs were not audited to owners; no universal leak-free or performance claim is made.
+**Configuration:** eviction and swap audit run on one CPU. Three-CPU scaling has eviction disabled. Multithreaded fork copies privately. Signals and the debugger implement the compact interfaces documented in the report.
 
-## Where things are
+## Find things
 
 ```text
-kernel/                 OS mechanisms and inherited kernel code
-user/                   Commands, libraries, workloads and tests
-mkfs/                   Inherited filesystem image builder
-docs/architecture.md    Architecture, interfaces and file-purpose inventory
-docs/features/          Focused mechanism explanations
-docs/results/           Commands, actual outputs and selected original captures
-docs/reports/           Final full-project Word report
-docs/presentation/      Short memory walkthrough and demonstration guide
-docs/references.md      MIT assignments, specifications and research context
-CONTRIBUTING.md         Simple main/temporary-branch/version workflow
+kernel/                 Operating-system mechanisms
+user/                   Commands, libraries and checked workloads
+tools/                  Reproducible validation and independent models
+docs/architecture.md    Architecture and complete source-purpose map
+docs/features/          Mechanism explanations
+docs/results/           Current validation and historical evidence
+docs/reports/           Combined project report
+docs/references.md      MIT labs, papers and specifications
 ```
 
-## Versions and project team
+`main` contains the complete project; tags preserve earlier versions. Use a temporary branch while developing, merge reviewed changes and remove that branch afterwards. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**`main` is the complete integrated project. Tags preserve versions; old branches are not needed to view progress.** [Version guide](docs/versions.md) explains the historical checkpoints. Future work can use a short-lived branch and pull request, deleted after merge. The existing commits and MIT history remain intact.
-
-Project team: [Akshit Mishra](https://github.com/AkshitMishra1107) and [Nikunj Trehan](https://github.com/nikunjtrehan). MIT supplies the original xv6 foundation; its [license](LICENSE) and [upstream README](README) are retained. Academic correspondence and project-specific differences are documented in [references](docs/references.md).
+Project team: Akshit Mishra, Nikunj Trehan and Pratyaksh Rana. MIT supplies the original xv6 foundation; its [license](LICENSE) and [upstream README](README) remain intact.

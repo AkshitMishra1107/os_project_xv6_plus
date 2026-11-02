@@ -16,3 +16,5 @@ The latest integrated source is on **main**. A branch is a movable development p
 v0.5–v0.8 and v0.10–v0.13 also occur in implementation commit messages. A message is not automatically a released tag. The original tag names remain unchanged; version labels are identifiers, so v0.10 is not a decimal number equal to v0.1.
 
 Completed remote branches were checked for ancestry in main before removal. A complete local bundle and branch-tip audit preserve the pre-cleanup state. Inherited MIT history and contributor identity are retained. Old timestamps on unchanged upstream files describe their last change; they do not erase project work.
+
+The validation revision on main adds full-page patterns, swap ownership reconciliation, a seeded Random reference, same-source COW ablation and high-resolution checked workloads. Source commits `722339e` and `7f925b5` are followed by the report/evidence commits; existing release tags remain unchanged. All four full regression configurations pass.

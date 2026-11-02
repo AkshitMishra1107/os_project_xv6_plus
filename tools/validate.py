@@ -54,8 +54,9 @@ def smoke():
     g=None
     try:
         g=Guest('smoke-smp',cpus=3)
-        for c,m in [('baseline','succeeded'),('lazytest','lazytest: OK'),('cowtest','cowtest: OK'),('kthreadtest','kthreadtest: OK'),('threadlife','threadlife: OK'),('threadmem','threadmem: OK'),('futextest','futextest: OK'),('libtest','libtest: OK'),('racetest','racetest: OK'),('prodcons','prodcons: OK'),('sigtest','sigtest: ALL OK'),('tracethread','tracethread: OK'),('trace 128 echo hi','syscall exec -> 2'),('dbgmini','final reason 3'),('dbglife','dbglife: OK'),('finaldemo','full-page bad=0')]:
+        for c,m in [('baseline','succeeded'),('lazytest','lazytest: OK'),('cowtest','cowtest: OK'),('kthreadtest','kthreadtest: OK'),('threadlife','threadlife: OK'),('threadmem','threadmem: OK'),('futextest','futextest: OK'),('libtest','libtest: OK'),('threadtest','499500'),('exittest','exittest: OK'),('racetest','racetest: OK'),('prodcons','prodcons: OK'),('philosophers','philosophers: OK'),('semtest','semtest: OK'),('sigtest','sigtest: ALL OK'),('tracethread','tracethread: OK'),('trace 128 echo hi','syscall exec -> 2'),('dbgmini','final reason 3'),('dbglife','dbglife: OK'),('finaldemo','full-page bad=0')]:
             g.cmd(c,m)
+            if c in ['cowtest','racetest','sigtest','dbgmini']:g.capture(c+'-result')
         g.capture('feature-checks');g.close();g.cleanup();g=None
         for policy in [1,2,3]:
             g=Guest('smoke-p'+str(policy),cpus=1,ram=8,policy=policy)

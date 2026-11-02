@@ -56,7 +56,7 @@ sequenceDiagram
 
 Prefaulting happens before the bucket spinlock. The expected-value check and transition to sleep share the lock used by wake, avoiding the check-to-sleep lost-wakeup window. Invalid or unaligned wait addresses return -1; a value mismatch returns immediately. Callers must keep the word allocated while waiters exist and loop around their actual predicate. Waking is not ownership transfer or a promise that the predicate remains true.
 
-Syscall numbers 23â€“28 are allocated to four thread calls and two futex calls. Number 29 is assigned to integrated tracing; signals use 30–33 and debugger services use 34–39.
+Syscall numbers 23–28 are allocated to four thread calls and two futex calls. Number 29 is assigned to integrated tracing; signals use 30–33 and debugger services use 34–39.
 
 ## User library (v0.8)
 
@@ -74,12 +74,12 @@ After `fork()` from a multi-threaded program, the child should exec or exit befo
 
 | Command | Added capability demonstrated | What is checked |
 |---|---|---|
-| `racetest` | Safely update shared state | Four workers; protected count exactly 200,000; unprotected result is scheduling dependent |
+| `racetest` | Safely update shared state | Four workers and 1000 barrier-controlled rounds; unsafe 1000 versus expected 4000, mutex 4000 |
 | `prodcons` | Sleep on a bounded-queue predicate | Two producers and two consumers, capacity eight; 200 items and total 10,100; every value consumed twice |
 | `philosophers` | Avoid circular lock waiting | Five workers use ascending fork order; each finishes 20 meals |
 | `semtest` | Limit concurrent resource users | Six workers complete 60 operations using two permits |
 | `exittest` | End a process from any member | Parent actually receives status 3 after worker-triggered group exit |
-| `speedup 1/2/3` | Partition a fixed compute workload | Always 40 million iterations; verifies each unsigned checksum and records guest ticks |
+| `speedup 1/2/3` | Partition a fixed compute workload | 400 million total iterations by default; same global range and checksum across workers; microsecond timing |
 | `threadmem` | Share lazy memory and grow the heap | Concurrent first touch, unique growth ranges and inherited COW visibility without a syscall between reader observations |
 | `threadswap` | Combine shared memory and replacement | Four workers verify a shared 12 MB region (3,072 pages); use one CPU and 8 MB RAM to observe swap activity |
 

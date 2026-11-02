@@ -2,7 +2,7 @@
 
 1. [Final full-project report](reports/xv6-plus-final-report.docx)
 2. [Architecture and complete file map](architecture.md)
-3. [Final combined validation](results/final-integration/README.md)
+3. [Current regression and comparisons](results/validation-upgrade/README.md)
 4. [Version history explained](versions.md)
 5. [Primary references and attribution](references.md)
 
