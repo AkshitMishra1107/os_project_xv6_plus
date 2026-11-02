@@ -81,4 +81,4 @@ User-memory copies can fault and require allocation or swap I/O. The final memor
 
 ## References and presentation
 
-Lazy allocation and COW correspond to MIT labs; memstat is related to the sysinfo exercise but has a different interface. Swap and policy design are supported by standard VM references. See the [annotated primary references](../references.md), [draft memory report](../reports/memory-management-draft.docx), and [teacher evidence guide](../presentation/memory.md).
+Lazy allocation and COW correspond to MIT labs; memstat is related to the sysinfo exercise but has a different interface. Swap and policy design are supported by standard VM references. See the [annotated primary references](../references.md), [draft memory report](../reports/xv6-plus-final-report.docx), and [teacher evidence guide](../presentation/memory.md).

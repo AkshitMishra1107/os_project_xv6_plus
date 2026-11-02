@@ -1,0 +1,226 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$ 
+lazytest
+lazytest: OK (656 pages touched)
+$ 
+cowtest
+cowtest: OK
+$ 
+forkbench
+forkbench: 50 forks of a 20 MB process took 6 ticks
+$ 
+kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$ 
+threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$ 
+futextest
+futextest: OK (200 handshakes, mismatch, invalid address, keys, kill)
+$ 
+libtest
+libtest: OK (60 nested creates/joins, mutex 3000, condition barrier, semaphore)
+$ 
+threadtest
+threadtest: OK sum = 499500 (expected 499500)
+$ 
+threadmem
+threadmem: OK (concurrent lazy faults, shared growth, inherited COW visibility)
+$ 
+racetest
+without lock: expected 200000, got 180476
+with mutex:   expected 200000, got 200000
+racetest: OK (unprotected result depends on scheduling)
+$ 
+prodcons
+prodcons: OK total 10100, 200 items, each value consumed twice
+$ 
+philosophers
+philosopher 0 ate 20 times
+philosopher 1 ate 20 times
+philosopher 2 ate 20 times
+philosopher 3 ate 20 times
+philosopher 4 ate 20 times
+philosophers: OK (fixed fork order)
+$ 
+semtest
+semtest: OK completed=60 peak=2 permits=2
+$ 
+exittest
+exittest: OK (worker exit terminated group, parent received status 3)
+$ 
+speedup 1
+speedup: OK 1 thread(s), 40000000 iterations, 1 ticks
+$ 
+speedup 2
+speedup: OK 2 thread(s), 40000000 iterations, 1 ticks
+$ 
+speedup 3
+speedup: OK 3 thread(s), 40000000 iterations, 1 ticks
+$ 
+trace 128 echo hi
+79: syscall exec -> 2
+hi
+$ 
+tracethread
+tracethread: inherited mask begins
+80: syscall kgettid -> 0
+80: syscall kgettid -> 1
+tracethread: cleared mask begins
+tracethread: OK
+$ 
+sigtest
+sigtest: 1 ok, signal to self
+child: got signal 10
+sigtest: 2 ok, signal to another process
+sigtest: 3 ok, default action ended the child
+sigtest: 4 ok, ignored signal
+sigtest: 5 ok, signal interrupted sleep
+sigtest: ALL OK
+$ 
+dbgmini
+dbgmini: stopped, reason 1, pc 0x00000000000003EA, sp 0x0000000000004FB0
+dbgmini: bytes at pc: 41 11 6 E4
+hello from the target
+dbgmini: final reason 3 (3 means exited)
+$ 
+dbglife
+dbglife: OK (8 abandoned targets and traced thread guard)
+$ 
+finaldemo
+finaldemo: worker 0 running as tid 1
+finaldemo: worker 1 running as tid 2
+finaldemo: worker 2 running as tid 3
+finaldemo: 3 threads touched 1536 pages, signal 10 received
+finaldemo: lazy allocations 1541, page faults 1544
+$ 
+dbg dbgtarget
+dbg: dbgtarget loaded, 44 functions. Type help.
+(dbg) 
+break inner
+breakpoint 1 at 0x0000000000000022 (inner)
+(dbg) 
+break middle
+breakpoint 2 at 0x0000000000000036 (middle)
+(dbg) 
+run
+Breakpoint 2, middle (0x0000000000000036)
+(dbg) 
+bt
+#0  middle + 0  (0x0000000000000036)
+#1  outer + 12  (0x0000000000000058)
+#2  main + 14  (0x000000000000000E)
+#3  start + 12  (0x00000000000003DC)
+(dbg) 
+regs
+pc 0x0000000000000036  ra 0x0000000000000058
+sp 0x0000000000004FB0  fp 0x0000000000004FC0
+a0 0x0000000000000005  a1 0x0000000000004FE0  a2 0x0000000000000001  a3 0x000000000000002C
+a4 0x0000000000003428  a5 0x000000000000492A  a6 0x0000000000000002  a7 0x0000000000000007
+(dbg) 
+continue
+Breakpoint 1, inner (0x0000000000000022)
+(dbg) 
+bt
+#0  inner + 0  (0x0000000000000022)
+#1  middle + 12  (0x0000000000000042)
+#2  outer + 12  (0x0000000000000058)
+#3  main + 14  (0x000000000000000E)
+#4  start + 12  (0x00000000000003DC)
+(dbg) 
+continue
+dbgtarget: outer(5) = 12
+program exited
+(dbg) 
+quit
+$ 
+usertests
+usertests starting
+test copyin: OK
+test copyout: OK
+test copyinstr1: OK
+test copyinstr2: OK
+test copyinstr3: OK
+test rwsbrk: OK
+test truncate1: OK
+test truncate2: OK
+test truncate3: OK
+test openiput: OK
+test exitiput: OK
+test iput: OK
+test opentest: OK
+test writetest: OK
+test writebig: OK
+test createtest: OK
+test dirtest: OK
+test exectest: OK
+test pipe1: OK
+test killstatus: OK
+test preempt: kill... wait... OK
+test exitwait: OK
+test reparent: OK
+test twochildren: OK
+test forkfork: OK
+test forkforkfork: OK
+test reparent2: OK
+test mem: OK
+test sharedfd: OK
+test fourfiles: OK
+test createdelete: OK
+test unlinkread: OK
+test linktest: OK
+test concreate: OK
+test linkunlink: OK
+test subdir: OK
+test bigwrite: OK
+test bigfile: OK
+test fourteen: OK
+test rmdot: OK
+test dirfile: OK
+test iref: OK
+test forktest: OK
+test sbrkbasic: OK
+test sbrkmuch: OK
+test kernmem: OK
+test MAXVAplus: OK
+test sbrkfail: OK
+test sbrkarg: OK
+test validatetest: OK
+test bsstest: OK
+test bigargtest: OK
+test argptest: OK
+test stacktest: OK
+test nowrite: OK
+test pgbug: OK
+test sbrkbugs: OK
+test sbrklast: OK
+test sbrk8000: OK
+test badarg: OK
+usertests slow tests starting
+test bigdir: OK
+test manywrites: OK
+test badwrite: OK
+test execout: OK
+test diskfull: balloc: out of blocks
+balloc: out of blocks
+OK
+test outofinodes: ialloc: no inodes
+OK
+ALL TESTS PASSED
+$ 
+memstat
+page faults      749618
+lazy allocations 697632
+cow copies       413
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$ 

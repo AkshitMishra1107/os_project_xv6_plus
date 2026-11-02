@@ -1,80 +1,68 @@
 # xv6 Plus
 
-An educational extension of MIT's RISC-V teaching operating system with **lazy allocation, copy-on-write fork, memory statistics, FIFO/Clock disk swapping, and threads with futex-based synchronization**.
+RISC-V xv6 extended with lazy allocation, copy-on-write fork, disk swapping, kernel threads, futex synchronization, syscall tracing, user signals and an in-guest debugger.
 
-The memory milestones and v0.5–v0.9 thread foundation are integrated into `main`. The historical memory-only release is [`v0.4`](https://github.com/AkshitMishra1107/os_project_xv6_plus/tree/v0.4); the integrated foundation is [`v0.9`](https://github.com/AkshitMishra1107/os_project_xv6_plus/tree/v0.9). Nikunj's tracing work remains separate in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2); signals and debugger completion are not claimed here.
+**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The report explains installation, mechanisms, every changed/added source file, original versus extended behavior, measured results, repairs and limitations. It contains embedded evidence and academic references, without full C-file listings.
 
-## Start here
+## What the project adds
 
-- [Memory implementation walkthrough](docs/presentation/memory-implementation-walkthrough.docx): kernel changes, code excerpts, embedded comparison screenshots and outputs, and a resource list mapped to their use.
-- [Detailed memory report draft](docs/reports/memory-management-draft.docx): extended implementation detail, original evidence, references and viva preparation.
-- [What to present to the teacher](docs/presentation/memory.md): commands, evidence checklist and explanations.
-- [MIT labs and other primary references](docs/references.md): direct lab links and how they relate to this project.
-- [Memory mechanisms and source map](docs/features/memory.md) · [memory comparisons and original screenshots](docs/results/memory/README.md).
-- [Thread architecture and synchronization](docs/features/threads.md) · [executed thread validation](docs/results/threads/README.md).
-
-## What changed
-
-The comparison baseline is **our eager checkpoint `v0.0`**, based on historical upstream `c4de4b0`. Newer upstream xv6 already contains lazy allocation. These are educational implementation and integration results, not claims of new algorithms or an MIT lab grading pass.
-
-| Feature | Earlier project behavior | Added functionality |
+| Area | Historical eager baseline | xv6 Plus |
 |---|---|---|
-| Lazy allocation | A 200 MiB eager request failed | Reserve virtual space first; allocate zeroed pages when used. The sparse test reports 656 write-touched pages. |
-| Copy-on-write fork | Fork copied resident data; the 80 MiB fork test failed | Share protected frames until private writes are needed; the custom isolation test passes. |
-| Memory statistics | No project memstat API | Observe handler calls, allocations, COW copies, free pages and swap activity. |
-| FIFO and Clock swap | A 12 MiB workload failed under an 8 MiB usable-RAM limit | Check all 3072 pages with zero bad pages using a fixed 16 MiB disk area. |
-| Threads | Separate process address spaces | Up to eight members share a PID, page table and heap, with separate trapframes and stacks. |
-| Synchronization | No corresponding project API | Futex-backed mutexes, condition variables and semaphores coordinate shared work. |
+| Allocation | Back positive heap growth immediately | Reserve addresses; zero and map pages on first use |
+| Process creation | Copy resident pages at fork | Share COW frames for single-member fork; copy on private write |
+| Memory pressure | No disk-backed paging | FIFO/Clock swapping with a fixed 16 MiB backing area |
+| Observation | No project memory API | Seven-field `memstat` command and syscall |
+| Shared execution | Separate process address spaces | Up to eight kernel-scheduled members share a PID, heap and page table |
+| Coordination | No project thread library | Futex-backed mutexes, conditions and semaphores |
+| Syscalls | No selectable trace interface | Masked PID/name/return tracing, including thread inheritance |
+| Asynchronous control | Uncatchable `kill` only | User handlers, pending signals, ignore/default action and restoration |
+| Debugging | No in-guest debugger | Child exec/breakpoint stops, memory/register inspection and symbolized frames |
 
-## Recorded results
+The reference is **project v0.0**, based on historical MIT revision `c4de4b0`. Current upstream xv6 differs and already includes lazy allocation. This educational project does not claim new algorithms, POSIX compliance, or a pass from MIT's course grader.
 
-| Experiment | Observed result |
-|---|---|
-| 50 fork/wait cycles with 20 MiB touched | 38 ticks before COW; 3–4 in separate COW-only observations; 6 in the historical integrated memory run. These are not controlled averages. |
-| 12 MiB pressure with 8 MiB usable xv6 RAM | Failed before swap; passed with swap and repeated correctness checks. |
-| Full regression on later integrated source | usertests passed with one and three CPUs. |
-| Thread stress | Ten SMP rounds passed; free pages stayed at 32300 and slots at zero after every round. |
-| Shared-thread swap pressure | Four workers checked 12 MiB with zero bad pages in ten FIFO and three Clock runs. |
+## Build and demonstrate
 
-Historical measurements, exact configurations, source hashes and limits are linked from the result pages. Remaining occupied swap slots were stable in the recorded pressure sequences; their owners have not been traced. The timing results do not establish proportional speedup or a universal policy winner.
-
-## Build and try
-
-Use Ubuntu/WSL2 with Git, make, RISC-V GCC/binutils, QEMU RISC-V and Perl.
+Use Ubuntu/WSL2 with RISC-V GCC/binutils, QEMU RISC-V, make, Git and Perl.
 
 ```bash
-git clone https://github.com/AkshitMishra1107/os_project_xv6_plus.git xv6-plus
-cd xv6-plus
+git clone https://github.com/AkshitMishra1107/os_project_xv6_plus.git
+cd os_project_xv6_plus
 make clean
-make qemu CPUS=1 RAM_MB=128 SWAP_POLICY=1
+make qemu CPUS=3 RAM_MB=128 SWAP_POLICY=1
 ```
 
-At the xv6 prompt, run `memstat`, `baseline`, `lazytest`, `cowtest`, `forkbench` and `usertests` individually. Exit QEMU with Ctrl+A then X.
+At the xv6 prompt try `lazytest`, `cowtest`, `racetest`, `prodcons`, `trace 32 cat README`, `sigtest`, `dbgmini` and `finaldemo`. For interactive debugging use `dbg dbgtarget`, then `break inner`, `run`, `bt`, `regs`, `continue`, `quit`. Run `usertests` for the inherited regression suite. Exit QEMU with Ctrl+A, then X.
 
-For swap pressure, rebuild clean with `CPUS=1 RAM_MB=8 SWAP_POLICY=1`, then run `memhog 4`, `memhog 12`, `swapfork`, `threadswap` and `memstat`. Policy 1 is FIFO; 2 is Clock. QEMU is provisioned with 128 MiB; RAM_MB limits the memory managed by xv6. **Swapping is supported with one CPU.**
+**Paging pressure:** rebuild clean with `CPUS=1 RAM_MB=8 SWAP_POLICY=1`, then run `memhog 4`, `memhog 12`, `swapfork`, `threadswap`, `hotcold` and `memstat`. Policy 2 selects Clock. QEMU exposes 128 MiB; RAM_MB limits the range managed by xv6. Always clean when changing CPU/RAM/policy definitions.
 
-For parallel thread demonstrations, rebuild clean with `CPUS=3 RAM_MB=128 SWAP_POLICY=1`. Run `threadtest`, `racetest`, `prodcons`, `philosophers`, `semtest`, `exittest`, and `threadmem`. Eviction is disabled in SMP builds. Always clean before changing CPU count, RAM limit or policy.
+## Evidence and measured improvements
 
-## Repository layout
+- A historical 200 MiB eager request failed; lazy reservation succeeded. Reservation does not mean all 200 MiB are resident.
+- The 80 MiB custom COW test changed from fork failure to successful isolation.
+- Historical 50-cycle fork loops observed 38 ticks before COW, 3–4 in COW-only runs and 6 in a later memory integration. These are separate observations, not controlled averages.
+- A checked 12 MiB workload failed under an 8 MiB limit before swap and completed with zero mismatches after swap.
+- Thread tests verify protected counter 200000, queue total 10100, two-permit bounds, lifecycle and shared-memory checks.
+- Fresh [combined validation](docs/results/final-integration/README.md) checks the integrated system and its debugger lifecycle repairs. Historical subsystem evidence stays in [memory results](docs/results/memory/README.md), [thread results](docs/results/threads/README.md) and [signals/debugger results](docs/results/signals-debugger/README.md).
+
+**Boundaries:** eviction is one-CPU only; SMP builds do not swap. Signals are a compact Unix-inspired subset. Debugging controls a direct opted-in single-context child. Remaining occupied slots in historical pressure runs were not audited to owners; no universal leak-free or performance claim is made.
+
+## Where things are
 
 ```text
-kernel/               Operating-system implementation
-user/                 Commands, library and executable tests
-mkfs/                 Filesystem image builder
-docs/features/        Mechanisms, diagrams and source links
-docs/results/         Selected outputs, screenshots and validation records
-docs/reports/         Teacher-facing draft report
-docs/presentation/    Demonstration and evidence guide
-docs/references.md    Primary references and attribution
-CONTRIBUTING.md       Team integration and contribution workflow
+kernel/                 OS mechanisms and inherited kernel code
+user/                   Commands, libraries, workloads and tests
+mkfs/                   Inherited filesystem image builder
+docs/architecture.md    Architecture, interfaces and file-purpose inventory
+docs/features/          Focused mechanism explanations
+docs/results/           Commands, actual outputs and selected original captures
+docs/reports/           Final full-project Word report
+docs/presentation/      Short memory walkthrough and demonstration guide
+docs/references.md      MIT assignments, specifications and research context
+CONTRIBUTING.md         Simple main/temporary-branch/version workflow
 ```
 
-Source stays in its build-compatible locations. Large manuals, editor recovery files, raw repeated logs and intermediate patches are preserved in the local report archive instead of the public presentation.
+## Versions and project team
 
-## Attribution and progress
+**`main` is the complete integrated project. Tags preserve versions; old branches are not needed to view progress.** [Version guide](docs/versions.md) explains the historical checkpoints. Future work can use a short-lived branch and pull request, deleted after merge. The existing commits and MIT history remain intact.
 
-MIT provides xv6 and its original history; the [license](LICENSE) and plain [upstream README](README) are retained. Lazy allocation and COW correspond to established MIT labs. Our memstat interface and combined swap/replacement experiments extend the project beyond those individual exercises; see the [reference map](docs/references.md).
-
-Akshit completed the memory and thread/synchronization foundation. [PR #3](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/3) and [PR #4](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/4) are merged with their commits preserved. Nikunj continues on `feature/signals-debugger`. Read [the team workflow](CONTRIBUTING.md) before integrating shared kernel changes.
-
-[Compare historical memory work](https://github.com/AkshitMishra1107/os_project_xv6_plus/compare/v0.0...v0.4) · [Integrated validation](docs/results/threads/integration.md)
+Project team: [Akshit Mishra](https://github.com/AkshitMishra1107) and [Nikunj Trehan](https://github.com/nikunjtrehan). MIT supplies the original xv6 foundation; its [license](LICENSE) and [upstream README](README) are retained. Academic correspondence and project-specific differences are documented in [references](docs/references.md).
