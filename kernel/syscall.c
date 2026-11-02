@@ -126,6 +126,8 @@ extern uint64 sys_dbg_cont(void);
 extern uint64 sys_dbg_getregs(void);
 extern uint64 sys_dbg_peek(void);
 extern uint64 sys_dbg_poke(void);
+extern uint64 sys_swapcheck(void);
+extern uint64 sys_uptime_us(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -169,6 +171,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_dbg_getregs] sys_dbg_getregs,
 [SYS_dbg_peek]    sys_dbg_peek,
 [SYS_dbg_poke]    sys_dbg_poke,
+[SYS_swapcheck] sys_swapcheck,
+[SYS_uptime_us] sys_uptime_us,
 };
 
 static char *syscall_names[] = {
@@ -212,6 +216,8 @@ static char *syscall_names[] = {
 [SYS_dbg_getregs]    "dbg_getregs",
 [SYS_dbg_peek]       "dbg_peek",
 [SYS_dbg_poke]       "dbg_poke",
+[SYS_swapcheck] "swapcheck",
+[SYS_uptime_us] "uptime_us",
 };
 
 void

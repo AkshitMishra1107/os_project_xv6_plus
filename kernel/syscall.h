@@ -44,3 +44,5 @@
 #define SYS_futex_wait 27
 
 #define SYS_futex_wake 28
+#define SYS_swapcheck 40
+#define SYS_uptime_us 41

@@ -1,6 +1,7 @@
 #include "kernel/types.h"
 #include "user/user.h"
 #include "kernel/memstat.h"
+#include "user/pagepattern.h"
 
 #define PAGE 4096
 
@@ -15,16 +16,13 @@ run_workload(int mb)
     exit(1);
   }
 
-  for(int i = 0; i < npages; i++){
-    base[i * PAGE] = i % 251;
-    base[i * PAGE + PAGE - 1] = i % 241;
-  }
+  for(int i = 0; i < npages; i++)
+    page_fill(base + i * PAGE, i, 17);
 
   int bad = 0;
 
   for(int i = 0; i < npages; i++){
-    if(base[i * PAGE] != (char)(i % 251) ||
-       base[i * PAGE + PAGE - 1] != (char)(i % 241))
+    if(page_verify(base + i * PAGE, i, 17) < 0)
       bad++;
   }
 
@@ -35,7 +33,7 @@ run_workload(int mb)
     exit(1);
   }
 
-  printf("memhog: %d MB, %d pages, %d bad, "
+  printf("memhog: %d MiB, %d pages, %d bad, all 4096 bytes/page checked, "
          "swap outs %d, swap ins %d\n",
          mb, npages, bad,
          (int)ms.swap_outs, (int)ms.swap_ins);
@@ -52,11 +50,11 @@ main(int argc, char *argv[])
     mb = atoi(argv[1]);
 
   if(mb < 1){
-    printf("usage: memhog [positive MB]\n");
+    printf("usage: memhog [positive MiB]\n");
     exit(1);
   }
 
-  printf("memhog: starting %d MB workload\n", mb);
+  printf("memhog: starting %d MiB workload\n", mb);
 
   int pid = fork();
 

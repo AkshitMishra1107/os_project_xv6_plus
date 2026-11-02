@@ -49,7 +49,7 @@ main(void)
   for(int i = 0; i < 4; i++)
     CHECK(thread_join(tids[i]) == 0);
   CHECK(memstat(&after) == 0);
-  printf("threadswap: OK (4 workers, 12 MB, 3072 pages, 0 bad)\n");
+  printf("threadswap: OK (4 workers, 12 MiB, 3072 pages, 0 bad)\n");
   printf("threadswap: swap outs %lu, swap ins %lu (workload deltas)\n",
          after.swap_outs-before.swap_outs, after.swap_ins-before.swap_ins);
   exit(0);

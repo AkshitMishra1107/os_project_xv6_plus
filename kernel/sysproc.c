@@ -1,6 +1,7 @@
 #include "types.h"
 #include "riscv.h"
 #include "defs.h"
+#include "swapaudit.h"
 #include "param.h"
 #include "memlayout.h"
 #include "spinlock.h"
@@ -162,4 +163,28 @@ sys_trace(void)
   argint(0, &mask);
   myproc()->trace_mask = mask;
   return 0;
+}
+
+uint64
+sys_uptime_us(void)
+{
+  // QEMU's RISC-V virt platform timebase is 10 MHz.
+  return r_time() / 10;
+}
+
+uint64
+sys_swapcheck(void)
+{
+  uint64 addr;
+  argaddr(0, &addr);
+  struct swapaudit *audit = (struct swapaudit *)kalloc();
+  if(audit == 0)
+    return -1;
+  // Resolve the destination before taking the audit snapshot.
+  prefault(addr, sizeof(*audit), 1);
+  int ret = swap_audit(audit);
+  if(ret == 0)
+    ret = copyout(myproc()->pagetable, addr, (char *)audit, sizeof(*audit));
+  kfree(audit);
+  return ret;
 }

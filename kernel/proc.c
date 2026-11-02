@@ -323,7 +323,7 @@ fork(void)
   struct proc *l = p->leader;
   acquire(&wait_lock);
   int exiting = l->exiting;
-  int private_copy = l->nthreads > 1;
+  int private_copy = l->nthreads > 1 || !FORK_COW;
   release(&wait_lock);
   if(exiting)
     return -1;

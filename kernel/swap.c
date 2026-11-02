@@ -9,9 +9,11 @@
 #include "fs.h"
 #include "buf.h"
 #include "memstat.h"
+#include "swapaudit.h"
 
 #define POLICY_FIFO 1
 #define POLICY_CLOCK 2
+#define POLICY_RANDOM 3
 
 #ifndef SWAP_POLICY
 #define SWAP_POLICY POLICY_FIFO
@@ -41,6 +43,17 @@ static uint64 next_seq = 1;
 
 #if SWAP_POLICY == POLICY_CLOCK
 static int clock_hand;
+#endif
+#if SWAP_POLICY == POLICY_RANDOM
+static uint random_state = 1;
+static uint
+random_next(void)
+{
+  random_state ^= random_state << 13;
+  random_state ^= random_state >> 17;
+  random_state ^= random_state << 5;
+  return random_state;
+}
 #endif
 
 static uint8 slot_used[NSWAPSLOTS];
@@ -236,7 +249,7 @@ pick_victim(void)
   }
 
   return best;
-#else
+#elif SWAP_POLICY == POLICY_CLOCK
   for(int n = 0; n < 2 * NFRAMES; n++){
     int i = clock_hand;
     clock_hand = (clock_hand + 1) % NFRAMES;
@@ -256,6 +269,16 @@ pick_victim(void)
   }
 
   return -1;
+#elif SWAP_POLICY == POLICY_RANDOM
+  int chosen = -1;
+  uint count = 0;
+  for(int i = 0; i < NFRAMES; i++){
+    if(evictable(i) && random_next() % ++count == 0)
+      chosen = i;
+  }
+  return chosen;
+#else
+#error Unsupported SWAP_POLICY
 #endif
 }
 
@@ -364,4 +387,101 @@ swap_in(pagetable_t pt, uint64 va, pte_t *pte, void *mem)
 
   if(mem)
     kfree(mem);
+}
+
+#if XV6_CPUS == 1
+// Audit only after swap I/O is quiescent. ptlock then prevents scheduling on
+// the one supported eviction CPU. Shared thread page tables are visited once.
+static ushort audit_refs[NSWAPSLOTS];
+static void
+audit_pt(pagetable_t pt, int level, uint64 prefix,
+         struct swapowner *owner, struct swapaudit *audit)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pt[i];
+    uint64 va = prefix | ((uint64)i << PXSHIFT(level));
+    if(pte & PTE_V){
+      if(pte & PTE_SWAP){
+        audit->invalid++;
+      } else if((pte & (PTE_R | PTE_W | PTE_X)) == 0){
+        uint64 pa = PTE2PA(pte);
+        if(level == 0 || pa < KERNBASE || pa >= PHYSTOP)
+          audit->invalid++;
+        else
+          audit_pt((pagetable_t)pa, level - 1, va, owner, audit);
+      }
+    } else if(pte & PTE_SWAP){
+      uint64 slot = PTE2SLOT(pte);
+      if(level != 0 || slot >= NSWAPSLOTS || !(pte & PTE_U)){
+        audit->invalid++;
+        continue;
+      }
+      if(audit_refs[slot] == 65535)
+        audit->invalid++;
+      else
+        audit_refs[slot]++;
+      audit->references++;
+      if(audit->entries < SWAPAUDIT_ENTRIES){
+        struct swapentry *entry = &audit->entry[audit->entries++];
+        entry->slot = slot;
+        entry->pid = owner->pid;
+        entry->va = va;
+      }
+      if(owner->slots++ == 0)
+        owner->example_va = va;
+    }
+  }
+}
+#endif
+
+int
+swap_audit(struct swapaudit *audit)
+{
+#if XV6_CPUS == 1
+  pagetable_t seen[NPROC];
+  int nseen = 0;
+  memset(audit, 0, sizeof(*audit));
+  acquiresleep(&swap_lock);
+  acquire(&ptlock);
+  memset(audit_refs, 0, sizeof(audit_refs));
+  for(struct proc *p = proc; p < &proc[NPROC]; p++){
+    if(p->state == UNUSED || p->pagetable == 0)
+      continue;
+    int already = 0;
+    for(int i = 0; i < nseen; i++)
+      if(seen[i] == p->pagetable)
+        already = 1;
+    if(already)
+      continue;
+    seen[nseen++] = p->pagetable;
+    if(audit->page_tables >= SWAPAUDIT_MAX_OWNERS){
+      audit->invalid++;
+      break;
+    }
+    struct swapowner *owner = &audit->owner[audit->page_tables++];
+    owner->pid = p->pid;
+    owner->tid = p->tid;
+    owner->state = p->state;
+    safestrcpy(owner->name, p->name, sizeof(owner->name));
+    audit_pt(p->pagetable, 2, 0, owner, audit);
+    if(owner->slots)
+      audit->owners++;
+  }
+  for(int slot = 0; slot < NSWAPSLOTS; slot++){
+    if(slot_used[slot])
+      audit->used++;
+    if(slot_used[slot] && audit_refs[slot] == 0)
+      audit->orphans++;
+    if(!slot_used[slot] && audit_refs[slot])
+      audit->missing++;
+    if(audit_refs[slot] > 1)
+      audit->duplicates += audit_refs[slot] - 1;
+  }
+  release(&ptlock);
+  releasesleep(&swap_lock);
+  return 0;
+#else
+  (void)audit;
+  return -1;
+#endif
 }

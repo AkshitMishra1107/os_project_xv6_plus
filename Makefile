@@ -67,7 +67,9 @@ OBJDUMP = $(TOOLPREFIX)objdump
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -fno-toplevel-reorder -ggdb -gdwarf-2
 RAM_MB ?= 128
 SWAP_POLICY ?= 1
+FORK_COW ?= 1
 CFLAGS += -DRAM_MB=$(RAM_MB) -DSWAP_POLICY=$(SWAP_POLICY)
+CFLAGS += -DFORK_COW=$(FORK_COW)
 CFLAGS += -DXV6_CPUS=$(CPUS)
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
@@ -137,6 +139,8 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
+	$U/_swapcheck\
+	$U/_pagebench\
 	$U/_dbglife\
 	$U/_tracethread\
 	$U/_racetest\

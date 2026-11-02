@@ -219,6 +219,8 @@ int             swap_out_one(void);
 void            swap_in(pagetable_t, uint64, pte_t*, void*);
 void            swap_slot_free(int);
 void            memstat_fill(struct memstat*);
+struct swapaudit;
+int             swap_audit(struct swapaudit*);
 
 extern uint64 stat_faults, stat_lazy, stat_cow;
 extern uint64 stat_swapin, stat_swapout;

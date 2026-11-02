@@ -1,5 +1,6 @@
 struct stat;
 struct memstat;
+struct swapaudit;
 
 
 // system calls
@@ -25,6 +26,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int memstat(struct memstat*);
+int swapcheck(struct swapaudit*);
+uint64 uptime_us(void);
 int trace(int);
 int sigaction(int, uint64, uint64);
 int sigsend(int, int);

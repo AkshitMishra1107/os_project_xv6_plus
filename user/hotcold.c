@@ -18,7 +18,7 @@ main(void)
     exit(1);
   }
 
-  printf("hotcold: 12 MB, 3 rounds\n");
+  printf("hotcold: 12 MiB, 3 rounds\n");
 
   // Initialize every page.
   for(int i = 0; i < npages; i++)

@@ -16,6 +16,8 @@ sub entry {
 }
 	
 entry("fork");
+entry("swapcheck");
+entry("uptime_us");
 entry("exit");
 entry("wait");
 entry("pipe");
