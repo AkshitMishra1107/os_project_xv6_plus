@@ -1,0 +1,420 @@
+[
+  {
+    "source": "report-evidence/validation-upgrade/full-verified/full-cpu1-p1/full-pass.ppm",
+    "sha256": "e9e6197623443de69c068d39921a3b8f8efc51bd014738c01b07cf80c31b11c8",
+    "source_kind": "completed full regression",
+    "source_pixels": [
+      720,
+      480
+    ],
+    "display_crop_pixels": [
+      0,
+      128,
+      564,
+      480
+    ],
+    "width_inches": 5.76,
+    "caption": "Completed usertests with active paging and zero swap ownership errors",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/validation-upgrade/full-verified/full-cpu1-p1/full-pass.ppm"
+  },
+  {
+    "source": "report-evidence/report-baseline-console/eager-v0.0/reservation-failure.ppm",
+    "sha256": "9db7675ab7aa3051e886a7ed994e7a2c638246579dd5783aabac2e1eaab78aef",
+    "source_kind": "historical baseline with serial formatting only",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      62,
+      419,
+      131
+    ],
+    "width_inches": 5.76,
+    "caption": "The same 200 MiB reservation fails eagerly and succeeds after lazy allocation",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-baseline-console/eager-v0.0/reservation-failure.ppm"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/lazy-allocation.png",
+    "sha256": "ea9456c7089609c88459d2bfe70c0547aa5a9dc5a90f752f96235e47ca5ac955",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1496,
+      497
+    ],
+    "display_crop_pixels": [
+      0,
+      376,
+      550,
+      492
+    ],
+    "width_inches": 5.76,
+    "caption": "The same 200 MiB reservation fails eagerly and succeeds after lazy allocation",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/lazy-allocation.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/fork-before-cow.png",
+    "sha256": "377ea315e88ce151e07d507ca06ae8104fe812b02f7284d2894bb3c80df57555",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1485,
+      395
+    ],
+    "display_crop_pixels": [
+      0,
+      274,
+      660,
+      366
+    ],
+    "width_inches": 5.76,
+    "caption": "Large fork changes from failure to success and the historical benchmark drops from 38 to 3 ticks",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/fork-before-cow.png"
+  },
+  {
+    "source": "report-evidence/14-cow-repeat-targeted-results.png",
+    "sha256": "e4edca9cfc69bfcb837fa8df6330d491c76ac356995cb3a0d2cf9a4fa6998b53",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1397,
+      403
+    ],
+    "display_crop_pixels": [
+      0,
+      218,
+      640,
+      310
+    ],
+    "width_inches": 5.76,
+    "caption": "Large fork changes from failure to success and the historical benchmark drops from 38 to 3 ticks",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/14-cow-repeat-targeted-results.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/memstat-observation.png",
+    "sha256": "72ace946b85f0abb480de2fa3b768b05a45a45c7acc06bab0cd396b7a8c7d609",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1336,
+      792
+    ],
+    "display_crop_pixels": [
+      0,
+      87,
+      356,
+      277
+    ],
+    "width_inches": 2.5,
+    "caption": "Original memstat before the workloads",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/memstat-observation.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/memstat-observation.png",
+    "sha256": "72ace946b85f0abb480de2fa3b768b05a45a45c7acc06bab0cd396b7a8c7d609",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1336,
+      792
+    ],
+    "display_crop_pixels": [
+      0,
+      510,
+      485,
+      737
+    ],
+    "width_inches": 3.15,
+    "caption": "Original memstat after the workloads",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/memstat-observation.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/no-swap-pressure.png",
+    "sha256": "3d9099438002410b0f37ebb6f3d74cd8c6426945311021281ce95f382be8953c",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1041,
+      883
+    ],
+    "display_crop_pixels": [
+      0,
+      268,
+      695,
+      361
+    ],
+    "width_inches": 5.76,
+    "caption": "Disk paging changes the original 12 MiB pressure result from exit minus one to checked completion",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/no-swap-pressure.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/no-swap-pressure.png",
+    "sha256": "3d9099438002410b0f37ebb6f3d74cd8c6426945311021281ce95f382be8953c",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1041,
+      883
+    ],
+    "display_crop_pixels": [
+      0,
+      544,
+      420,
+      614
+    ],
+    "width_inches": 3.9,
+    "caption": "Disk paging changes the original 12 MiB pressure result from exit minus one to checked completion",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/no-swap-pressure.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/swap-pressure.png",
+    "sha256": "6d3196727bab923ca3b332a1eb43c449b168431514602af9d29aec17d11d745b",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1606,
+      855
+    ],
+    "display_crop_pixels": [
+      0,
+      536,
+      795,
+      629
+    ],
+    "width_inches": 5.76,
+    "caption": "Disk paging changes the original 12 MiB pressure result from exit minus one to checked completion",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/swap-pressure.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/swap-fork.png",
+    "sha256": "d7ef1cc36ed7751c15c264865de9edb9808510ddafeb4f620ce506a4e32fa9d0",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1373,
+      562
+    ],
+    "display_crop_pixels": [
+      0,
+      274,
+      375,
+      343
+    ],
+    "width_inches": 3.8,
+    "caption": "Original swapfork capture verifies child data and private writes while paging",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/swap-fork.png"
+  },
+  {
+    "source": "report-evidence/report-comparison-refresh/pressure-and-ownership/full-page-pressure.ppm",
+    "sha256": "861baa5648dd7a381f893b6508522f66e19d5980b20e1ec0105627710ff0e5b9",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      62,
+      506,
+      179
+    ],
+    "width_inches": 5.76,
+    "caption": "Every page byte is checked and remaining swap slots reconcile to live init mappings",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-comparison-refresh/pressure-and-ownership/full-page-pressure.ppm"
+  },
+  {
+    "source": "report-evidence/report-comparison-refresh/pressure-and-ownership/owners.ppm",
+    "sha256": "ce81cf72756521f0bb848b7bfb92d68634a067c8fa1f1eae40efbb15c8fc4261",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      224,
+      512,
+      403
+    ],
+    "width_inches": 5.76,
+    "caption": "Every page byte is checked and remaining swap slots reconcile to live init mappings",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-comparison-refresh/pressure-and-ownership/owners.ppm"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/fifo-hotcold.png",
+    "sha256": "0f795be882da69e0c1f9f06e6c4a60f2925c696192871c8c400228a2b515da69",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      1063,
+      552
+    ],
+    "display_crop_pixels": [
+      0,
+      266,
+      500,
+      338
+    ],
+    "width_inches": 5.76,
+    "caption": "Original hotcold captures compare 16013 FIFO transfers with 15375 Clock transfers",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/fifo-hotcold.png"
+  },
+  {
+    "source": "xv6-plus/docs/results/memory/screenshots/clock-hotcold.png",
+    "sha256": "676d9650bc3d6409f313d545f52b4c9bd9fb38c9646d23742718c61c4ebde0dc",
+    "source_kind": "original supplied capture",
+    "source_pixels": [
+      686,
+      950
+    ],
+    "display_crop_pixels": [
+      0,
+      264,
+      485,
+      359
+    ],
+    "width_inches": 5.76,
+    "caption": "Original hotcold captures compare 16013 FIFO transfers with 15375 Clock transfers",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/xv6-plus/docs/results/memory/screenshots/clock-hotcold.png"
+  },
+  {
+    "source": "report-evidence/report-comparison-refresh/clock-hot/hot-pattern.ppm",
+    "sha256": "f208ddea1a6b3c6d8398590eed7ad64b007cd84b0588bb98d4dfeab615125974",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      62,
+      512,
+      195
+    ],
+    "width_inches": 5.76,
+    "caption": "Clock hot-pattern command with all 4096 bytes per page verified",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-comparison-refresh/clock-hot/hot-pattern.ppm"
+  },
+  {
+    "source": "report-evidence/report-comparison-refresh/cow-writeall/writeall.ppm",
+    "sha256": "1c8aecf7a39114cc786396ded2d6d1243167cc78297c03291b15dc585b852c0a",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      62,
+      512,
+      163
+    ],
+    "width_inches": 5.76,
+    "caption": "Write-all fork checks both child data and unchanged parent data",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-comparison-refresh/cow-writeall/writeall.ppm"
+  },
+  {
+    "source": "report-evidence/report-capture-refresh/control-and-parallel/scaling-three.ppm",
+    "sha256": "1b2dcdaff8c68a9a7c4fcda5b4415cacfff181f9be5af9ddc0936b561eae4fef",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      624,
+      512,
+      736
+    ],
+    "width_inches": 5.76,
+    "caption": "One and three workers complete equal work with matching checksums",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-capture-refresh/control-and-parallel/scaling-three.ppm"
+  },
+  {
+    "source": "report-evidence/validation-upgrade/smoke-verified/smoke-smp/racetest-result.ppm",
+    "sha256": "1a1dd09a9015ba20c3cc0a2a930ccb48b0c2f621a64a1c7e1cc41ba90051639f",
+    "source_kind": "controlled race verification",
+    "source_pixels": [
+      720,
+      480
+    ],
+    "display_crop_pixels": [
+      0,
+      384,
+      572,
+      480
+    ],
+    "width_inches": 5.76,
+    "caption": "The forced race loses 3000 updates while the mutex preserves all 4000",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/validation-upgrade/smoke-verified/smoke-smp/racetest-result.ppm"
+  },
+  {
+    "source": "report-evidence/report-capture-refresh/control-and-parallel/signals.ppm",
+    "sha256": "d143fb5a60a68c1295819a1f7e1f2c4446b2a97ec7205419857ce74f832b6fb4",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      544,
+      364,
+      736
+    ],
+    "width_inches": 5.76,
+    "caption": "Tracing signals and debugger checks show their commands and outcomes",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-capture-refresh/control-and-parallel/signals.ppm"
+  },
+  {
+    "source": "report-evidence/report-capture-refresh/control-and-parallel/debugger-lifetime.ppm",
+    "sha256": "e4db59d68b19f7ed46363a7ea36c463d4a78b7d0e67ac46d1fcae9075f0fc13b",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      576,
+      512,
+      736
+    ],
+    "width_inches": 5.76,
+    "caption": "Tracing signals and debugger checks show their commands and outcomes",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-capture-refresh/control-and-parallel/debugger-lifetime.ppm"
+  },
+  {
+    "source": "report-evidence/report-comparison-refresh/pressure-and-ownership/combined-audit.ppm",
+    "sha256": "6b3204a9627482f6efc1779d1900f41c415251ce362f6bd718b94e62fbc35f42",
+    "source_kind": "fresh WSL verification capture",
+    "source_pixels": [
+      512,
+      736
+    ],
+    "display_crop_pixels": [
+      0,
+      384,
+      512,
+      643
+    ],
+    "width_inches": 5.76,
+    "caption": "Three worker contexts verify 12 MiB while paging and signals remain functional",
+    "processing": "Word display crop only; original image pixels retained",
+    "archive_path": "figure-sources/report-evidence/report-comparison-refresh/pressure-and-ownership/combined-audit.ppm"
+  }
+]

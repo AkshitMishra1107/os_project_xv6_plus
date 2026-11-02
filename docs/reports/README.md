@@ -1,11 +1,11 @@
 # Final project report
 
-[Download the 40-page xv6 Plus final report](xv6-plus-final-report.docx).
+[Download the final xv6 Plus report](xv6-plus-final-report.docx).
 
-The report follows the supplied TIET format and explains each added feature through its earlier behavior, changed files/functions, implementation mechanism, benefit and validation. It covers memory, threads, synchronization, tracing, signals and the in-guest debugger as one project. Each comparison includes its justification and meaning; measured-change tables state the samples and limits. Seventeen embedded input/output captures show actual recorded QEMU commands in a read-only log viewer. Complete C files are not printed.
+The report presents the project as one implementation: original limitations, objectives, changed files and mechanisms, measured results and their significance. It covers memory management, kernel threads, synchronization, tracing, signals and the debugger. Architecture and page-state diagrams explain the integration; complete C files are not reproduced.
 
-The [matched study](../results/comparison-study/README.md) retains the fresh measurements and source controls: five fork-loop samples per version, three fresh guest boots per replacement policy, focused integration checks and a complete three-CPU `usertests` pass. The report includes 16 mapped academic references and a compact test summary. The earlier 30-page version and detailed technical record remain preserved locally and in project history.
+The 17 figures include supplied development screenshots and later native QEMU verification captures. Original wording and numbers are retained. Captions identify the checkpoint and configuration. Word display crops remove build chatter and unused console area while preserving the original embedded images.
 
-The previous detailed version is preserved in the local technical archive and Git history. The complete file-purpose inventory remains in [the architecture map](../architecture.md); checkpoint-specific logs and captures remain in [results](../results/final-integration/README.md).
+The [controlled validation record](../results/validation-upgrade/README.md) contains four completed full regression configurations, full-page integrity and swap ownership checks, and 95 matched benchmark cases. Its original data and evidence archive remain unchanged. The [report capture supplement](../results/report-captures/README.md) supplies the additional real WSL runs and the provenance of the experimental figure panels.
 
-Roll numbers, supervisor details and signatures remain for completion. Attach institution-generated plagiarism/AI review reports when required. The recorded single-CPU full-suite timeout and other implementation limits remain explicit.
+Twenty-two academic references identify their use in the report. The file overview and test inventory connect the implementation to the evidence. The public edition omits student roll numbers; the submission copy is maintained separately. Certificate and declaration signatures remain unsigned for institutional completion.
