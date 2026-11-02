@@ -1,17 +1,13 @@
 # Project documentation
 
-## Teacher discussion
+1. [Final full-project report](reports/xv6-plus-final-report.docx)
+2. [Architecture and complete file map](architecture.md)
+3. [Final combined validation](results/final-integration/README.md)
+4. [Version history explained](versions.md)
+5. [Primary references and attribution](references.md)
 
-- [Draft memory report](reports/memory-management-draft.docx) and [report scope](reports/README.md)
-- [Presentation commands and evidence checklist](presentation/memory.md)
-- [MIT lab correspondence and primary references](references.md)
+Detailed mechanisms: [memory](features/memory.md), [threads and synchronization](features/threads.md), [tracing signals debugger](features/signals-debugger.md).
 
-## Implementation and results
+Historical evidence: [memory](results/memory/README.md), [threads](results/threads/README.md), [signals/debugger](results/signals-debugger/README.md). These keep checkpoint-specific observations distinct from final combined validation.
 
-- [Memory mechanisms](features/memory.md) · [historical comparisons and original screenshots](results/memory/README.md)
-- [Thread-ready memory](features/thread-ready-memory.md) · [v0.5 observations](results/thread-ready-memory/README.md)
-- [Threads and synchronization](features/threads.md) · [recorded validation](results/threads/README.md)
-- [Integrated main validation](results/threads/integration.md)
-- [Team workflow](../CONTRIBUTING.md)
-
-Feature pages explain purpose and source locations. Result folders keep selected observed output and meaningful original screenshots. Full development logs and large manuals remain in the private report archive.
+The [short memory walkthrough](presentation/memory-implementation-walkthrough.docx) and [memory demonstration guide](presentation/memory.md) remain useful for oral explanation. The final report replaces the earlier public memory draft; its older version remains in Git history and the private report archive.

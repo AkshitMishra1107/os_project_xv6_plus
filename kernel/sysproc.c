@@ -78,7 +78,7 @@ sys_sleep(void)
   acquire(&tickslock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){
-    if(killed(myproc())){
+    if(killed(myproc()) || signal_pending(myproc())){
       release(&tickslock);
       return -1;
     }
@@ -153,4 +153,13 @@ uint64
 sys_kgettid(void)
 {
   return myproc()->tid;
+}
+
+uint64
+sys_trace(void)
+{
+  int mask;
+  argint(0, &mask);
+  myproc()->trace_mask = mask;
+  return 0;
 }

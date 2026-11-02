@@ -1,0 +1,19 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$ 
+dbglife
+dbglife: OK (8 abandoned targets and traced thread guard)
+$ 
+finaldemo
+finaldemo: worker 0 running as tid 1
+finaldemo: worker 1 running as tid 2
+finaldemo: worker 2 running as tid 3
+finaldemo: 3 threads touched 1536 pages, signal 10 received
+finaldemo: lazy allocations 1541, page faults 1544
+$ 

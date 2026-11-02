@@ -10,6 +10,8 @@ struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
 
+static void stop_group(struct proc *, int);
+
 struct proc *initproc;
 
 int nextpid = 1;
@@ -124,6 +126,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->trace_mask = 0;
   p->leader = p;
   p->tid = 0;
   p->nthreads = 1;
@@ -175,6 +178,15 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->trace_mask = 0;
+  p->sig_pending = 0;
+  p->in_handler = 0;
+  for(int s = 0; s < NSIG; s++){
+    p->sig_handler[s] = 0;
+    p->sig_restorer[s] = 0;
+  }
+  p->traced = 0;
+  p->dbg_state = 0;
   p->leader = 0;
   p->tid = 0;
   p->nthreads = 0;
@@ -340,6 +352,11 @@ fork(void)
       np->ofile[i] = filedup(p->ofile[i]);
   np->cwd = idup(p->cwd);
   safestrcpy(np->name, p->name, sizeof(np->name));
+  np->trace_mask = p->trace_mask;
+  for(int i = 0; i < NSIG; i++){
+    np->sig_handler[i] = p->sig_handler[i];
+    np->sig_restorer[i] = p->sig_restorer[i];
+  }
   int pid = np->pid;
   acquire(&wait_lock);
   np->parent = l;
@@ -360,6 +377,13 @@ reparent(struct proc *p)
   for(pp = proc; pp < &proc[NPROC]; pp++){
     if(pp->parent == p){
       pp->parent = initproc;
+      if(pp->traced){                   // do not leave a frozen child behind
+        pp->traced = 0;
+        pp->dbg_state = 0;
+        wakeup(&pp->dbg_state);
+        // reparent already holds wait_lock; kill would acquire it again.
+        stop_group(pp, -1);
+      }
       wakeup(initproc);
     }
   }
@@ -434,6 +458,9 @@ int
 kthread_create(uint64 fn, uint64 arg, uint64 sp, uint64 stub)
 {
   struct proc *p = myproc(), *l = p->leader, *np;
+  // The debugger controls one stopped execution context, not a thread group.
+  if(l->traced)
+    return -1;
   if((fn & 1) || (stub & 1) || (sp & 15) || sp == 0)
     return -1;
 #if XV6_CPUS > 1
@@ -496,6 +523,15 @@ kthread_create(uint64 fn, uint64 arg, uint64 sp, uint64 stub)
     return -1;
   }
   np->state = USED;
+  np->trace_mask = p->trace_mask;
+  np->sig_pending = 0;
+  np->in_handler = 0;
+  np->traced = 0;
+  np->dbg_state = 0;
+  for(int i = 0; i < NSIG; i++){
+    np->sig_handler[i] = p->sig_handler[i];
+    np->sig_restorer[i] = p->sig_restorer[i];
+  }
   struct trapframe *tf = (struct trapframe *)kalloc();
   if(tf == 0){
     freeproc(np);

@@ -114,4 +114,14 @@ Peter J. Denning. Communications of the ACM 11(5), 323-333, May 1968. DOI 10.114
 
 L. A. Belady, R. A. Nelson and G. S. Shedler. Communications of the ACM, June 1969. Publisher DOI 10.1145/363011.363155 is linked by the IBM Research record. The primary record and abstract were checked; the ACM full text was unavailable through the research tool. It provides historical context for FIFO policy anomalies. Our experiments do not reproduce that paper's anomaly experiment.
 
-The Word report now links each of its 12 exact code excerpts to a specific commit and line range, separately from these external references. The implementation evidence is the project source and captured output; the papers explain established ideas.
+The final report describes file purposes, important functions, measured behavior and mapped academic references without reproducing full source files. Project code and recorded output are implementation evidence; the references explain established mechanisms.
+
+## Threads tracing signals and debugger context
+
+- [MIT multithreading lab 2023](https://pdos.csail.mit.edu/6.1810/2023/labs/thread.html): related user-level switching exercise, distinct from this project's kernel-scheduled shared-address-space members.
+- [MIT traps lab 2020](https://pdos.csail.mit.edu/6.S081/2020/labs/traps.html): frame tracing and user handler restoration context; our signal framework is not the identical sigalarm assignment.
+- [MIT system calls lab 2020](https://pdos.csail.mit.edu/6.S081/2020/labs/syscall.html): direct conceptual correspondence for mask-based syscall tracing; our memstat differs from sysinfo.
+- [OSTEP Locks](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks.pdf) and [Condition Variables](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-cv.pdf): synchronization context, including predicate loops.
+- [RISC-V ELF psABI](https://riscv-non-isa.github.io/riscv-elf-psabi-doc/): calling convention and frame records used by the debugger.
+
+Reviewed 2 November 2026. Existing MIT license and history are retained. No full POSIX implementation, official MIT grading result or paper experiment replication is claimed.

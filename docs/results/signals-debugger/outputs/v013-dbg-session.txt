@@ -1,0 +1,46 @@
+=== xv6-Plus Milestone 13 Interactive Debugger Tool Verification Session ===
+Environment: WSL Ubuntu 24.04 LTS (x86_64) on Windows 11
+Toolchain: riscv64-linux-gnu-gcc 13.3.0, QEMU 8.2.2
+Date: 2026-10-28 01:49 IST
+
+$ make qemu
+qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 3 -nographic -global virtio-mmio.force-legacy=false -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ dbg dbgtarget
+dbg: dbgtarget loaded, 27 functions. Type help.
+(dbg) break inner
+breakpoint 1 at 0x0000000000000022 (inner)
+(dbg) break middle
+breakpoint 2 at 0x0000000000000032 (middle)
+(dbg) run
+Breakpoint 2, middle (0x0000000000000032)
+(dbg) bt
+#0  middle + 0  (0x0000000000000032)
+#1  outer + 12  (0x0000000000000054)
+#2  main + 14  (0x000000000000000E)
+#3  start + 12  (0x000000000000006A)
+#4  malloc + 98  (0x00000000000008CA)
+(dbg) continue
+Breakpoint 1, inner (0x0000000000000022)
+(dbg) bt
+#0  inner + 0  (0x0000000000000022)
+#1  middle + 12  (0x000000000000003E)
+#2  outer + 12  (0x0000000000000054)
+#3  main + 14  (0x000000000000000E)
+#4  start + 12  (0x000000000000006A)
+#5  malloc + 98  (0x00000000000008CA)
+(dbg) continue
+dbgtarget: outer(5) = 12
+program exited
+(dbg) quit
+$
+
+=== Baseline Comparison (Stock xv6 v0.0) ===
+$ dbg dbgtarget
+exec dbg failed
+(Stock xv6 lacks the dbg utility, ELF symbol parser, software breakpoint injection, and frame pointer stack unwinding)

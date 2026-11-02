@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "dbg.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -55,6 +56,8 @@ usertrap(void)
     intr_on();
     syscall();
 
+  } else if(r_scause() == 3 && p->traced){
+    dbg_stop(p, DBG_BREAK);
   } else if(r_scause() == 12 ||
             r_scause() == 13 ||
             r_scause() == 15){
@@ -82,6 +85,8 @@ usertrap(void)
 
   if(which_dev == 2)
     yield();
+
+  deliver_signals(p);
 
   usertrapret();
 }
@@ -128,6 +133,8 @@ usertrapret(void)
   // jump to userret in trampoline.S at the top of memory, which 
   // switches to the user page table, restores user registers,
   // and switches to user mode with sret.
+  if(p->traced)
+    asm volatile("fence.i");
   uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
   ((void (*)(uint64, uint64))trampoline_userret)(satp, p->tf_va);
 }

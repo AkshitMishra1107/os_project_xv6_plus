@@ -115,6 +115,17 @@ extern uint64 sys_kgettid(void);
 extern uint64 sys_futex_wait(void);
 extern uint64 sys_futex_wake(void);
 extern uint64 sys_memstat(void);
+extern uint64 sys_trace(void);
+extern uint64 sys_sigaction(void);
+extern uint64 sys_sigsend(void);
+extern uint64 sys_sigreturn(void);
+extern uint64 sys_pause(void);
+extern uint64 sys_dbg_traceme(void);
+extern uint64 sys_dbg_wait(void);
+extern uint64 sys_dbg_cont(void);
+extern uint64 sys_dbg_getregs(void);
+extern uint64 sys_dbg_peek(void);
+extern uint64 sys_dbg_poke(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -147,6 +158,60 @@ static uint64 (*syscalls[])(void) = {
 [SYS_futex_wait] = sys_futex_wait,
 [SYS_futex_wake] = sys_futex_wake,
 [SYS_memstat] = sys_memstat,
+[SYS_trace]     sys_trace,
+[SYS_sigaction] sys_sigaction,
+[SYS_sigsend]   sys_sigsend,
+[SYS_sigreturn] sys_sigreturn,
+[SYS_pause]     sys_pause,
+[SYS_dbg_traceme] sys_dbg_traceme,
+[SYS_dbg_wait]    sys_dbg_wait,
+[SYS_dbg_cont]    sys_dbg_cont,
+[SYS_dbg_getregs] sys_dbg_getregs,
+[SYS_dbg_peek]    sys_dbg_peek,
+[SYS_dbg_poke]    sys_dbg_poke,
+};
+
+static char *syscall_names[] = {
+[SYS_fork]           "fork",
+[SYS_exit]           "exit",
+[SYS_wait]           "wait",
+[SYS_pipe]           "pipe",
+[SYS_read]           "read",
+[SYS_kill]           "kill",
+[SYS_exec]           "exec",
+[SYS_fstat]          "fstat",
+[SYS_chdir]          "chdir",
+[SYS_dup]            "dup",
+[SYS_getpid]         "getpid",
+[SYS_sbrk]           "sbrk",
+[SYS_sleep]          "sleep",
+[SYS_uptime]         "uptime",
+[SYS_open]           "open",
+[SYS_write]          "write",
+[SYS_mknod]          "mknod",
+[SYS_unlink]         "unlink",
+[SYS_link]           "link",
+[SYS_mkdir]          "mkdir",
+[SYS_close]          "close",
+[SYS_memstat]        "memstat",
+[SYS_kthread_create] "kthread_create",
+[SYS_kthread_exit] "kthread_exit",
+[SYS_kthread_join] "kthread_join",
+[SYS_kgettid] "kgettid",
+[SYS_futex_wait] "futex_wait",
+[SYS_futex_wake] "futex_wake",
+
+[SYS_trace]          "trace",
+[SYS_sigaction]      "sigaction",
+[SYS_sigsend]        "sigsend",
+[SYS_sigreturn]      "sigreturn",
+[SYS_pause]          "pause",
+[SYS_dbg_traceme]    "dbg_traceme",
+[SYS_dbg_wait]       "dbg_wait",
+[SYS_dbg_cont]       "dbg_cont",
+[SYS_dbg_getregs]    "dbg_getregs",
+[SYS_dbg_peek]       "dbg_peek",
+[SYS_dbg_poke]       "dbg_poke",
 };
 
 void
@@ -160,6 +225,13 @@ syscall(void)
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();
+    if(num < 31 && (p->trace_mask & (1U << num))){
+      const char *name = "unknown";
+      if(num < NELEM(syscall_names) && syscall_names[num])
+        name = syscall_names[num];
+      printf("%d: syscall %s -> %d\n", p->pid, name,
+             (int)p->trapframe->a0);
+    }
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);

@@ -1,9 +1,7 @@
-# Draft memory report
+# Final project report
 
-[Download the Word draft](memory-management-draft.docx).
+[Download the full xv6 Plus final report](xv6-plus-final-report.docx).
 
-This 31-page draft is for teacher discussion, not the final institutional submission. It covers the v0.0–v0.4 memory milestones, later memory compatibility and validation, original evidence, source checkpoints, known limits and primary references. Its teacher demonstration, evidence checklist and viva sections explain what to show and what each result proves.
+Follows the supplied TIET format: A4, Times New Roman, prescribed heading sizes and binding margins, contents, Introduction through References, complete file inventory and evaluator reproduction sequence. It explains installation, original versus changed functions, new file purposes, integration, observed results, limits and mapped MIT/research references. Full C files are intentionally not printed.
 
-Unknown roll-number, programme and teacher details are omitted rather than invented. Update the draft after feedback and apply the required college format when supplied. Original screenshots remain in [memory results](../results/memory/README.md); full private archives are not duplicated here.
-
-The comparison revision adds a direct overview, 12 exact source excerpts linked to immutable commits, before-and-after output quotations in Appendices A-F, and two classic research-paper references. It identifies newly added files separately from changes to existing code. Results remain labelled by their actual historical checkpoints; no new runtime experiment is claimed for this documentation revision.
+Roll numbers, supervisor details and signatures remain blank because they were not supplied. Official plagiarism/AI checker reports must be attached by the students if required; no score or certificate is invented. The report presents the project together rather than assigning chapters to individuals.

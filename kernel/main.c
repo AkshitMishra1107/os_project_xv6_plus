@@ -22,6 +22,7 @@ main()
     kvminithart();   // turn on paging
     futex_init();
     procinit();      // process table
+    signal_init();   // signal subsystem
     trapinit();      // trap vectors
     trapinithart();  // install kernel trap vector
     plicinit();      // set up interrupt controller

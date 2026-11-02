@@ -93,4 +93,4 @@ For historical comparisons use a separate clone or worktree at the relevant tag.
 
 ![Historical hotcold measured phases](figures/policy-observations.png)
 
-These charts are authored from the recorded numbers above, not new measurements. They retain the individual-trial and pre-repair policy limits. Read the [draft report](../../reports/memory-management-draft.docx), [teacher demonstration guide](../../presentation/memory.md) and [primary references](../../references.md).
+These charts are authored from the recorded numbers above, not new measurements. They retain the individual-trial and pre-repair policy limits. Read the [final project report](../../reports/xv6-plus-final-report.docx), [teacher demonstration guide](../../presentation/memory.md) and [primary references](../../references.md).
