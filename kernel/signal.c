@@ -69,7 +69,7 @@ sigsend(int pid, int sig)
 
   acquire(&siglock);
   for(struct proc *p = proc; p < &proc[NPROC]; p++){
-    if(p->pid == pid &&
+    if(p->pid == pid && p->leader == p &&
        p->state != UNUSED && p->state != ZOMBIE){
       p->sig_pending |= (1 << sig);
       wakeup(p);                        // wake a sleeping pause() so it notices

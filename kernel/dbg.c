@@ -19,7 +19,7 @@ find_target(int pid)
   struct proc *l = myproc();
 
   for(struct proc *t = proc; t < &proc[NPROC]; t++){
-    if(t->pid == pid && t->parent == l && t->state != UNUSED)
+    if(t->pid == pid && t->leader == t && t->parent == l && t->state != UNUSED)
       return t;
   }
   return 0;
@@ -54,6 +54,8 @@ dbg_stop(struct proc *p, int reason)
 uint64
 sys_dbg_traceme(void)
 {
+  if(!proc_can_exec())
+    return -1;
   myproc()->traced = 1;
   return 0;
 }

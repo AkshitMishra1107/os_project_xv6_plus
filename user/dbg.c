@@ -284,9 +284,12 @@ backtrace(void)
       break;                     // frame pointers must climb
     if(dbg_peek(pid, fp - 8, &ra, 8) < 0 || dbg_peek(pid, fp - 16, &next_fp, 8) < 0)
       break;
-    if(func_by_addr(ra) == 0)
+    struct func *f = func_by_addr(ra);
+    if(f == 0)
       break;                     // not code we know: end of the chain
     print_frame(n++, ra);
+    if(strcmp(f->name, "start") == 0)
+      break;                     // entry stub has no user caller frame
     floor = fp + 1;
     fp = next_fp;
   }

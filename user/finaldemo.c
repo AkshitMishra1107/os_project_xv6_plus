@@ -24,6 +24,10 @@ main(void)
   int parent = getpid();
 
   region = sbrk(NT * PER_THREAD);           // lazy: nothing is allocated yet
+  if(region == (char *)-1){
+    printf("finaldemo: FAIL reservation\n");
+    exit(1);
+  }
   mutex_init(&lock);
   signal(SIGUSR1, (uint64)on_usr1);
   memstat(&before);
@@ -34,10 +38,19 @@ main(void)
     exit(0);
   }
 
-  for(int i = 0; i < NT; i++)
+  for(int i = 0; i < NT; i++){
     tids[i] = thread_create(worker, (void*)(uint64)i);
-  for(int i = 0; i < NT; i++)
-    thread_join(tids[i]);
+    if(tids[i] <= 0){
+      printf("finaldemo: FAIL thread creation\n");
+      exit(1);
+    }
+  }
+  for(int i = 0; i < NT; i++){
+    if(thread_join(tids[i]) < 0){
+      printf("finaldemo: FAIL join\n");
+      exit(1);
+    }
+  }
 
   while(!got_signal)                        // poll: sleep() returns early when a signal arrives
     sleep(1);
@@ -63,6 +76,9 @@ worker(void *arg)
 {
   int id = (int)(uint64)arg;
   char *mine = region + id * PER_THREAD;
+  mutex_lock(&lock);
+  printf("finaldemo: worker %d running as tid %d\n", id, thread_self());
+  mutex_unlock(&lock);
 
   for(int off = 0; off < PER_THREAD; off += PAGE){
     mine[off] = 1;                          // a page fault: lazy allocation

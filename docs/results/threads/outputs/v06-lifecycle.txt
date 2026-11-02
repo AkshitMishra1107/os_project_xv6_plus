@@ -1,0 +1,5 @@
+kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$ threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$ 

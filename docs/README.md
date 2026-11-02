@@ -1,9 +1,17 @@
 # Project documentation
 
-- [Memory feature explanations and diagrams](features/memory.md)
-- [Memory before-and-after results](results/memory/README.md)
-- [Signals, Tracing, and Debugger feature explanations and diagrams](features/signals-debugger.md)
-- [Signals, Tracing, and Debugger before-and-after results](results/signals-debugger/README.md)
-- [Team contribution workflow](../CONTRIBUTING.md)
+## Teacher discussion
 
-New validated features follow the same structure: one explanation page and one results directory containing selected outputs and screenshots. The detailed private development/report archive is kept outside the public documentation.
+- [Draft memory report](reports/memory-management-draft.docx) and [report scope](reports/README.md)
+- [Presentation commands and evidence checklist](presentation/memory.md)
+- [MIT lab correspondence and primary references](references.md)
+
+## Implementation and results
+
+- [Memory mechanisms](features/memory.md) Â· [historical comparisons and original screenshots](results/memory/README.md)
+- [Thread-ready memory](features/thread-ready-memory.md) Â· [v0.5 observations](results/thread-ready-memory/README.md)
+- [Threads and synchronization](features/threads.md) Â· [recorded validation](results/threads/README.md)
+- [Integrated main validation](results/threads/integration.md)
+- [Team workflow](../CONTRIBUTING.md)
+
+Feature pages explain purpose and source locations. Result folders keep selected observed output and meaningful original screenshots. Full development logs and large manuals remain in the private report archive.

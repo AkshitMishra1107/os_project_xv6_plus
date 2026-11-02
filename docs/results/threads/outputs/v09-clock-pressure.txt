@@ -1,0 +1,31 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       1850
+swap slots used  0
+$ memhog 4
+memhog: starting 4 MB workload
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+$ memhog 12
+memhog: starting 12 MB workload
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4369, swap ins 3068
+memhog: child exit status 0
+$ swapfork
+swapfork: child bad=0
+swapfork: OK
+$ threadswap
+threadswap: OK (4 workers, 12 MB, 3072 pages, 0 bad)
+threadswap: swap outs 2843, swap ins 1540 (workload deltas)
+$ memstat
+page faults      32151
+lazy allocations 17970
+cow copies       1566
+swap outs        20377
+swap ins         12587
+free pages       1852
+swap slots used  2
+$ 

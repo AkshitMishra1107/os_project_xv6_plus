@@ -1,0 +1,52 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$ threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$ futextest
+futextest: OK (200 handshakes, mismatch, invalid address, keys, kill)
+$ threadtest
+threadtest: OK sum = 499500 (expected 499500)
+$ libtest
+libtest: OK (60 nested creates/joins, mutex 3000, condition barrier, semaphore)
+$ racetest
+without lock: expected 200000, got 183587
+with mutex:   expected 200000, got 200000
+racetest: OK (unprotected result depends on scheduling)
+$ prodcons
+prodcons: OK total 10100, 200 items, each value consumed twice
+$ philosophers
+philosopher 0 ate 20 times
+philosopher 1 ate 20 times
+philosopher 2 ate 20 times
+philosopher 3 ate 20 times
+philosopher 4 ate 20 times
+philosophers: OK (fixed fork order)
+$ semtest
+semtest: OK completed=60 peak=2 permits=2
+$ exittest
+exittest: OK (worker exit terminated group, parent received status 3)
+$ threadmem
+threadmem: OK (concurrent lazy faults, shared growth, inherited COW visibility)
+$ speedup 1
+speedup: OK 1 thread(s), 40000000 iterations, 1 ticks
+$ speedup 2
+speedup: OK 2 thread(s), 40000000 iterations, 1 ticks
+$ speedup 3
+speedup: OK 3 thread(s), 40000000 iterations, 1 ticks
+$ memstat
+page faults      493
+lazy allocations 258
+cow copies       193
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ 

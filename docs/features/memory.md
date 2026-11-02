@@ -78,3 +78,7 @@ flowchart LR
 User-memory copies can fault and require allocation or swap I/O. The final memory milestone stages pipe writes and performs pipe read user copies outside the pipe spinlock. Wait cleanup releases child memory and locks before copying status into the parent. These changes let the memory mechanisms operate through existing system calls. They are covered by the final full regression result.
 
 **Code:** [`pipe.c`](../../kernel/pipe.c), [`wait` in proc.c](../../kernel/proc.c), and the unchanged regression suite [`usertests.c`](../../user/usertests.c).
+
+## References and presentation
+
+Lazy allocation and COW correspond to MIT labs; memstat is related to the sysinfo exercise but has a different interface. Swap and policy design are supported by standard VM references. See the [annotated primary references](../references.md), [draft memory report](../reports/memory-management-draft.docx), and [teacher evidence guide](../presentation/memory.md).

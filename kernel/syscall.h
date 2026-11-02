@@ -32,3 +32,15 @@
 #define SYS_dbg_getregs 37
 #define SYS_dbg_peek    38
 #define SYS_dbg_poke    39
+
+#define SYS_kthread_create 23
+
+#define SYS_kthread_exit 24
+
+#define SYS_kthread_join 25
+
+#define SYS_kgettid 26
+
+#define SYS_futex_wait 27
+
+#define SYS_futex_wake 28

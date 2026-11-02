@@ -51,7 +51,7 @@ For historical comparisons use a separate clone or worktree at the relevant tag.
 
 ## Measurement limits
 
-- The recorded full-suite and final demo evidence applies to v0.4. v0.5 is under development and has not yet been declared validated.
+- The historical full-suite and final demo evidence on this page applies to v0.4. Later thread-compatible memory and integrated-main checks are recorded separately in the [thread results](../threads/README.md) and [integration record](../threads/integration.md).
 - Swapping is supported with one CPU. `RAM_MB` changes usable xv6 RAM; QEMU remains provisioned with 128 MB.
 - Fork timings are individual observations, not repeated statistical measurements. COW-only and final integrated observations remain separate.
 - `memstat` includes shell and measurement-command activity. Program snapshots and later shell snapshots can differ.
@@ -86,3 +86,11 @@ For historical comparisons use a separate clone or worktree at the relevant tag.
 </details>
 
 [Observed console excerpts](outputs/observed-results.txt) · [Screenshot provenance](screenshots/README.md) · [Feature explanations](../../features/memory.md)
+
+## Charts and teacher discussion
+
+![Individual historical fork observations](figures/fork-observations.png)
+
+![Historical hotcold measured phases](figures/policy-observations.png)
+
+These charts are authored from the recorded numbers above, not new measurements. They retain the individual-trial and pre-repair policy limits. Read the [draft report](../../reports/memory-management-draft.docx), [teacher demonstration guide](../../presentation/memory.md) and [primary references](../../references.md).

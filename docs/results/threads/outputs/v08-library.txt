@@ -1,0 +1,21 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ threadtest
+threadtest: OK sum = 499500 (expected 499500)
+$ libtest
+libtest: OK (60 nested creates/joins, mutex 3000, condition barrier, semaphore)
+$ memstat
+page faults      366
+lazy allocations 246
+cow copies       63
+swap outs        0
+swap ins         0
+free pages       32300
+swap slots used  0
+$ 

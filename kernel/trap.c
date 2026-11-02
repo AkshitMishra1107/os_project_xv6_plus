@@ -42,49 +42,47 @@ usertrap(void)
   if((r_sstatus() & SSTATUS_SPP) != 0)
     panic("usertrap: not from user mode");
 
-  // send interrupts and exceptions to kerneltrap(),
-  // since we're now in the kernel.
   w_stvec((uint64)kernelvec);
 
   struct proc *p = myproc();
-  
-  // save user program counter.
   p->trapframe->epc = r_sepc();
-  
-  if(r_scause() == 8){
-    // system call
 
+  if(r_scause() == 8){
+    // System call.
     if(killed(p))
       exit(-1);
 
-    // sepc points to the ecall instruction,
-    // but we want to return to the next instruction.
     p->trapframe->epc += 4;
-
-    // an interrupt will change sepc, scause, and sstatus,
-    // so enable only now that we're done with those registers.
     intr_on();
-
     syscall();
+
   } else if(r_scause() == 3 && p->traced){
-    // ebreak in a traced process: freeze here; epc still points at the ebreak
     dbg_stop(p, DBG_BREAK);
-  } else if(r_scause()==12 || r_scause() == 13 || r_scause() == 15){
-  // Load or store page fault.
-  if(handle_page_fault(p, r_stval(), r_scause() == 15) < 0)
-    setkilled(p);
-} else if((which_dev = devintr()) != 0){
-    // ok
+  } else if(r_scause() == 12 ||
+            r_scause() == 13 ||
+            r_scause() == 15){
+    // Instruction, load, or store page fault.
+    int access = (r_scause() == 15) ? ACC_WRITE :
+                 (r_scause() == 12) ? ACC_EXEC :
+                                     ACC_READ;
+
+    if(handle_page_fault(p, r_stval(), access) < 0)
+      setkilled(p);
+
+  } else if((which_dev = devintr()) != 0){
+    // Device interrupt handled.
+
   } else {
-    printf("usertrap(): unexpected scause 0x%lx pid=%d\n", r_scause(), p->pid);
-    printf("            sepc=0x%lx stval=0x%lx\n", r_sepc(), r_stval());
+    printf("usertrap(): unexpected scause 0x%lx pid=%d\n",
+           r_scause(), p->pid);
+    printf("            sepc=0x%lx stval=0x%lx\n",
+           r_sepc(), r_stval());
     setkilled(p);
   }
 
   if(killed(p))
     exit(-1);
 
-  // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
     yield();
 
@@ -138,7 +136,7 @@ usertrapret(void)
   if(p->traced)
     asm volatile("fence.i");
   uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
-  ((void (*)(uint64))trampoline_userret)(satp);
+  ((void (*)(uint64, uint64))trampoline_userret)(satp, p->tf_va);
 }
 
 // interrupts and exceptions from kernel code go here via kernelvec,

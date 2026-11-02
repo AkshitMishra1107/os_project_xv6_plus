@@ -16,10 +16,11 @@ main()
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
-    kinit();         // physical page allocator
     swap_init();
+    kinit();
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging
+    futex_init();
     procinit();      // process table
     signal_init();   // signal subsystem
     trapinit();      // trap vectors

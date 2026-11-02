@@ -48,3 +48,15 @@ entry("dbg_cont");
 entry("dbg_getregs");
 entry("dbg_peek");
 entry("dbg_poke");
+
+entry("kthread_create");
+
+entry("kthread_exit");
+
+entry("kthread_join");
+
+entry("kgettid");
+
+entry("futex_wait");
+
+entry("futex_wake");

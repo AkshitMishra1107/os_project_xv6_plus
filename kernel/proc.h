@@ -114,4 +114,11 @@ struct proc {
   int in_handler;              // 1 while a handler runs
   int traced;                  // 1 if the parent is allowed to control this process
   int dbg_state;               // 0 running; otherwise the reason it is stopped
+  struct proc *leader;  // main thread of this process
+  int tid;              // thread number, main thread is 0
+  int nthreads;         // live thread count, maintained by leader
+  uint tidmask;         // occupied thread numbers
+  uint64 tf_va;         // this thread's trapframe address
+  int exiting;          // leader: group exit requested, protected by wait_lock
+  int exit_status;      // leader: status of the first group exit request
 };

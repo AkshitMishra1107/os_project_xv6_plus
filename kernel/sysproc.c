@@ -40,23 +40,29 @@ uint64
 sys_sbrk(void)
 {
   int n;
-  struct proc *p = myproc();
-  uint64 addr = p->sz;
+  struct proc *l = myproc()->leader;
 
   argint(0, &n);
 
-  if(n >= 0){
-    // Reserve virtual memory without allocating physical pages.
-    if(addr + n < addr || addr + n > TRAPFRAME)
-      return -1;
+  acquire(&ptlock);
+  uint64 addr = l->sz;
 
-    p->sz = addr + n;
-  } else {
-    // Shrinking still releases allocated pages.
-    if(growproc(n) < 0)
+  if(n >= 0){
+    uint64 newsz = addr + (uint64)n;
+
+    if(newsz < addr || newsz > USERLIMIT){
+      release(&ptlock);
       return -1;
+    }
+
+    // Reserve virtual space; allocate pages when accessed.
+    l->sz = newsz;
+  } else if(l->nthreads > 1 || growproc(n) < 0){
+    release(&ptlock);
+    return -1;
   }
 
+  release(&ptlock);
   return addr;
 }
 
@@ -119,11 +125,40 @@ sys_memstat(void)
   return 0;
 }
 
+
+uint64
+sys_kthread_create(void)
+{
+  uint64 fn, arg, sp, stub;
+  argaddr(0, &fn); argaddr(1, &arg);
+  argaddr(2, &sp); argaddr(3, &stub);
+  return kthread_create(fn, arg, sp, stub);
+}
+
+uint64
+sys_kthread_exit(void)
+{
+  kthread_exit();
+}
+
+uint64
+sys_kthread_join(void)
+{
+  int tid;
+  argint(0, &tid);
+  return kthread_join(tid);
+}
+
+uint64
+sys_kgettid(void)
+{
+  return myproc()->tid;
+}
+
 uint64
 sys_trace(void)
 {
   int mask;
-
   argint(0, &mask);
   myproc()->trace_mask = mask;
   return 0;

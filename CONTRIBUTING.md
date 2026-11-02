@@ -7,9 +7,9 @@ Both developers use this repository with their own local clone, Git identity and
 | Developer | Branch | Work |
 | --- | --- | --- |
 | Akshit | `feature/threads-sync` | v0.5–v0.9: thread-ready memory, kernel threads, futex, synchronization library and demonstrations |
-| Teammate | `feature/signals-debugger` | Tracing prototype now; v0.10–v0.13: tracing integration, signals, debugger protocol and tool |
+| Nikunj Trehan (`nikunjtrehan`) | `feature/signals-debugger` | Tracing prototype now; v0.10–v0.13: tracing integration, signals, debugger protocol and tool |
 
-The teammate has started locally and has not yet pushed a contribution. Full Part 3 integration depends on the v0.9 thread interfaces. A standalone tracing prototype may be committed and pushed now, but its PR stays draft until the thread-dependent hooks and tests are complete. Akshit must add the teammate as a collaborator with write access; the teammate accepts the invitation before pushing.
+Nikunj has pushed the standalone tracing prototype in [draft PR #2](https://github.com/AkshitMishra1107/os_project_xv6_plus/pull/2). Full Part 3 integration depends on the v0.9 thread interfaces. A standalone tracing prototype may be committed and pushed now, but its PR stays draft until the thread-dependent hooks and tests are complete. Each developer uses their own GitHub account and needs write access to push to the shared repository.
 
 ```mermaid
 flowchart TD
@@ -91,7 +91,7 @@ git merge origin/main
 git push origin feature/signals-debugger
 ```
 
-Akshit uses the same sequence with `feature/threads-sync`. Resolve conflicts deliberately, then rebuild and test before pushing. To stop an unresolved merge and return to its starting state, use `git merge --abort`. Never resolve a shared file by blindly replacing the other person's implementation, force-pushing shared history, or moving an existing tag.
+Akshit uses the same sequence on his current feature branch. PRs #3 and #4 are now merged into main; new feature PRs target main unless a concrete unmerged prerequisite is identified. Resolve conflicts deliberately, then rebuild and test before pushing. To stop an unresolved merge and return to its starting state, use `git merge --abort`. Never resolve a shared file by blindly replacing the other person's implementation, force-pushing shared history, or moving an existing tag.
 
 ## Shared interfaces
 
@@ -111,4 +111,10 @@ For a clean normal memory build use `make clean` followed by `make qemu CPUS=1 R
 
 Capture the useful result, command and configuration. Keep only the clearest screenshot for each distinct result and put its filename in the result page. Before/after comparisons must identify both versions and use comparable configurations.
 
-Akshit creates an official release tag only after the milestone PR is merged and integrated main passes its checks. A commit message mentioning a version does not by itself validate that release. The v0.5 work remains in development until its new validation evidence is complete.
+Akshit creates an official release tag only after the milestone PR is merged and integrated main passes its checks. A commit message mentioning a version does not by itself validate that release. The v0.5 prerequisite and v0.6-v0.9 implementation are integrated; their source and validation history are preserved by the v0.9 tag. Keep Nikunj’s tracing draft separate until thread inheritance and reuse hooks are integrated and tested.
+
+## Current handoff
+
+PRs #3 and #4 were integrated on 28 October at the owner's instruction after local source review and validation. There were no external GitHub approval reviews; the integration record states this explicitly. Peer review remains the preferred workflow for new shared-kernel changes.
+
+Nikunj should save his own work, fetch origin, stay on feature/signals-debugger, and merge origin/main. Preserve thread creation, group cleanup, per-thread trapframes, page-table lock ownership and syscall allocations while adding tracing. Keep draft PR #2 incomplete until the thread inheritance/reuse hooks and combined tests pass. Individual authorship and the inherited MIT license/history remain intact.
