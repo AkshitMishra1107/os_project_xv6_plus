@@ -1,0 +1,34 @@
+dbg dbgtarget
+dbg: dbgtarget loaded, 44 functions. Type help.
+(dbg)
+break inner
+breakpoint 1 at 0x0000000000000022 (inner)
+(dbg)
+break middle
+breakpoint 2 at 0x0000000000000036 (middle)
+(dbg)
+run
+Breakpoint 2, middle (0x0000000000000036)
+(dbg)
+bt
+#0  middle + 0  (0x0000000000000036)
+#1  outer + 12  (0x0000000000000058)
+#2  main + 14  (0x000000000000000E)
+#3  start + 12  (0x00000000000003DC)
+(dbg)
+continue
+Breakpoint 1, inner (0x0000000000000022)
+(dbg)
+bt
+#0  inner + 0  (0x0000000000000022)
+#1  middle + 12  (0x0000000000000042)
+#2  outer + 12  (0x0000000000000058)
+#3  main + 14  (0x000000000000000E)
+#4  start + 12  (0x00000000000003DC)
+(dbg)
+continue
+dbgtarget: outer(5) = 12
+program exited
+(dbg)
+quit
+$

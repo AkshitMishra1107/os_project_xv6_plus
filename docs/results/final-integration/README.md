@@ -2,6 +2,8 @@
 
 Real QEMU executions captured on 2 November 2026. The combined code preserves the original teammate commits and integrates them with the real thread library. Kernel/user/build code is frozen at integration commit `09d752e`; later presentation changes do not change this source.
 
+The later [matched comparison study](../comparison-study/README.md) adds repeated eager/extended fork measurements, three fresh guest boots per paging policy, input/output captures and another complete three-CPU `usertests` pass. Its measurements remain separate from the ordered-session captures below.
+
 | Run | Configuration | Result |
 |---|---|---|
 | Earlier full SMP check | 3 CPUs, 128 MiB, policy 1 | Full usertests passed before the final debugger orphan repair |

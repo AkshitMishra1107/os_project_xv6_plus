@@ -1,0 +1,18 @@
+sigtest
+sigtest: 1 ok, signal to self
+child: got signal 10
+sigtest: 2 ok, signal to another process
+sigtest: 3 ok, default action ended the child
+sigtest: 4 ok, ignored signal
+sigtest: 5 ok, signal interrupted sleep
+sigtest: ALL OK
+$
+dbgmini
+dbgmini: stopped, reason 1, pc 0x00000000000003EA, sp 0x0000000000004FB0
+dbgmini: bytes at pc: 41 11 6 E4
+hello from the target
+dbgmini: final reason 3 (3 means exited)
+$
+dbglife
+dbglife: OK (8 abandoned targets and traced thread guard)
+$

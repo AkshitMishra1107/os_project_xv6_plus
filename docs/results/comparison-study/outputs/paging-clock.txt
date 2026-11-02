@@ -1,0 +1,18 @@
+memhog 4
+memhog: starting 4 MB workload
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+$
+memhog 12
+memhog: starting 12 MB workload
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4386, swap ins 3068
+memhog: child exit status 0
+$
+swapfork
+swapfork: child bad=0
+swapfork: OK
+$
+threadswap
+threadswap: OK (4 workers, 12 MB, 3072 pages, 0 bad)
+threadswap: swap outs 3053, swap ins 1734 (workload deltas)
+$

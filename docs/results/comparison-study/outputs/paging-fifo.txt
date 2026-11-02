@@ -1,0 +1,26 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       1840
+swap slots used  0
+$
+swapfork
+swapfork: child bad=0
+swapfork: OK
+$
+threadswap
+threadswap: OK (4 workers, 12 MB, 3072 pages, 0 bad)
+threadswap: swap outs 3319, swap ins 2011 (workload deltas)
+$
+memstat
+page faults      16921
+lazy allocations 8724
+cow copies       1551
+swap outs        10561
+swap ins         6633
+free pages       1842
+swap slots used  2
+$

@@ -1,0 +1,11 @@
+trace 128 echo hi
+24: syscall exec -> 2
+hi
+$
+tracethread
+tracethread: inherited mask begins
+25: syscall kgettid -> 0
+25: syscall kgettid -> 1
+tracethread: cleared mask begins
+tracethread: OK
+$

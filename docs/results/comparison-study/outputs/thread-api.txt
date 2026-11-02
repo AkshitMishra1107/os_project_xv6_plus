@@ -1,0 +1,15 @@
+kthreadtest
+kthreadtest: OK (limits, join reuse, PID, threaded fork, exec guards)
+$
+threadlife
+threadlife: OK (worker exit status 3 and whole-group kill)
+$
+threadmem
+threadmem: OK (concurrent lazy faults, shared growth, inherited COW visibility)
+$
+futextest
+futextest: OK (200 handshakes, mismatch, invalid address, keys, kill)
+$
+libtest
+libtest: OK (60 nested creates/joins, mutex 3000, condition barrier, semaphore)
+$

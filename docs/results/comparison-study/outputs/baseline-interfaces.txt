@@ -1,0 +1,12 @@
+trace 128 echo hi
+exec trace failed
+$
+sigtest
+exec sigtest failed
+$
+dbgmini
+exec dbgmini failed
+$
+kthreadtest
+exec kthreadtest failed
+$

@@ -1,0 +1,18 @@
+[Earlier source 24d95707e371]
+baseline
+baseline: sbrk(200MB) failed (expected on stock xv6)
+$
+cowtest
+cowtest: fork failed
+$
+
+[Extended source 3341e8218eaa]
+baseline
+baseline: sbrk(200MB) succeeded
+$
+lazytest
+lazytest: OK (656 pages touched)
+$
+cowtest
+cowtest: OK
+$

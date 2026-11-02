@@ -1,0 +1,25 @@
+threadtest
+threadtest: OK sum = 499500 (expected 499500)
+$
+racetest
+without lock: expected 200000, got 200000
+with mutex:   expected 200000, got 200000
+racetest: OK (unprotected result depends on scheduling)
+$
+prodcons
+prodcons: OK total 10100, 200 items, each value consumed twice
+$
+philosophers
+philosopher 0 ate 20 times
+philosopher 1 ate 20 times
+philosopher 2 ate 20 times
+philosopher 3 ate 20 times
+philosopher 4 ate 20 times
+philosophers: OK (fixed fork order)
+$
+semtest
+semtest: OK completed=60 peak=2 permits=2
+$
+exittest
+exittest: OK (worker exit terminated group, parent received status 3)
+$

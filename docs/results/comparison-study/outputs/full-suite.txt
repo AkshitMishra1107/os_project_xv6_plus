@@ -1,0 +1,30 @@
+usertests
+[Earlier test lines omitted for space]
+test stacktest: OK
+test nowrite: OK
+test pgbug: OK
+test sbrkbugs: OK
+test sbrklast: OK
+test sbrk8000: OK
+test badarg: OK
+usertests slow tests starting
+test bigdir: OK
+test manywrites: OK
+test badwrite: OK
+test execout: OK
+test diskfull: balloc: out of blocks
+balloc: out of blocks
+OK
+test outofinodes: ialloc: no inodes
+OK
+ALL TESTS PASSED
+$
+memstat
+page faults      723276
+lazy allocations 671370
+cow copies       388
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$ 

@@ -1,0 +1,460 @@
+{
+  "date": "2026-11-02",
+  "sources": {
+    "eager": {
+      "ref": "v0.0",
+      "commit": "24d95707e371f5bba684c601f7841f7488a17ccc",
+      "harness_changes": [
+        {
+          "file": "user/cowtest.c",
+          "sha256": "7bb0e14d17dae8a4bf7a77a8b4996e5794ad37895ed7851fd8164b9db7c71f8a",
+          "purpose": "Same project test program added to the isolated earlier source; kernel unchanged."
+        },
+        {
+          "file": "user/forkbench.c",
+          "sha256": "ab961f008796fa26d741a8e600742f0b3b4a7f909667785083e40e67b9cb0045",
+          "purpose": "Same project test program added to the isolated earlier source; kernel unchanged."
+        }
+      ]
+    },
+    "before-swap": {
+      "ref": "before-swap",
+      "commit": "c325f8f0e6e05267684812f5f974adc6734f5ee9",
+      "harness_changes": []
+    },
+    "final": {
+      "ref": "HEAD",
+      "commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "harness_changes": []
+    },
+    "same_forkbench_sha256": "ab961f008796fa26d741a8e600742f0b3b4a7f909667785083e40e67b9cb0045",
+    "same_memhog_before_after": true
+  },
+  "source_integrity": {
+    "eager": {
+      "commit": "24d95707e371f5bba684c601f7841f7488a17ccc",
+      "tracked_source_files_checked": 69,
+      "unintended_changes": []
+    },
+    "before-swap": {
+      "commit": "c325f8f0e6e05267684812f5f974adc6734f5ee9",
+      "tracked_source_files_checked": 78,
+      "unintended_changes": []
+    },
+    "final": {
+      "commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "tracked_source_files_checked": 111,
+      "unintended_changes": []
+    },
+    "same_test_inputs": true,
+    "final_implementation_matches_09d752e": true
+  },
+  "measurements": {
+    "eager_fork_ticks": [
+      40,
+      43,
+      44,
+      46,
+      47
+    ],
+    "final_fork_ticks": [
+      8,
+      7,
+      6,
+      6,
+      8
+    ],
+    "fifo_hotcold": [
+      [
+        8006,
+        8007
+      ],
+      [
+        8006,
+        8007
+      ],
+      [
+        8006,
+        8007
+      ]
+    ],
+    "complete": true,
+    "clock_hotcold": [
+      [
+        7691,
+        7684
+      ],
+      [
+        7691,
+        7684
+      ],
+      [
+        7691,
+        7684
+      ]
+    ],
+    "fork_median_reduction_percent": 84.0909090909091
+  },
+  "derived": {
+    "fork_before_median": "44",
+    "fork_after_median": "7",
+    "fork_reduction": "84.1",
+    "fork_before_samples": "40, 43, 44, 46, 47",
+    "fork_after_samples": "8, 7, 6, 6, 8",
+    "fork_ratio": "6.29",
+    "fifo_in_median": "8006",
+    "fifo_out_median": "8007",
+    "fifo_total_median": "16013",
+    "clock_in_median": "7691",
+    "clock_out_median": "7684",
+    "clock_total_median": "15375",
+    "fifo_total_samples": "16013, 16013, 16013",
+    "clock_total_samples": "15375, 15375, 15375",
+    "policy_total_reduction": "3.98",
+    "policy_in_reduction": "3.93",
+    "policy_out_reduction": "4.03",
+    "race_unlocked": "200000",
+    "race_locked": "200000",
+    "race_lost": "0",
+    "race_error": "0.000",
+    "race_interpretation": "This execution did not expose lost updates, so it is not evidence of a numerical improvement. Matching once does not make unsynchronized increments safe; the mutex supplies the required critical-section rule and the protected result checks its invariant.",
+    "parallel_ticks": "1, 0, 1",
+    "fifo_slots": "2",
+    "clock_slots": "2",
+    "new_suite_outcome": "completed with ALL TESTS PASSED"
+  },
+  "capture_method": "Screenshots of isolated local read-only QEMU log views. Actual inputs and output retained; separately recorded sessions and omissions labelled. No personal browser profile used.",
+  "exhibits": [
+    {
+      "role": "memory-comparison",
+      "title": "Earlier and extended allocation and fork outcomes",
+      "run": "eager-comparison",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 128,
+        "policy": 1
+      },
+      "text_sha256": "c3c1a72985642d6535f474b42519301f842eb70bc9ba366c7ea8fbb00419223e",
+      "screenshot": "screenshots/memory-comparison.png",
+      "height": 705,
+      "screenshot_sha256": "d5955ab7bd4a67fa41015d69be8c43252508d4b083a05f5ac1c1651d6ec0bbea",
+      "source_commits": [
+        "24d95707e371f5bba684c601f7841f7488a17ccc",
+        "3341e8218eaa3852a1b02dfb855d22800c929474"
+      ]
+    },
+    {
+      "role": "fork-comparison",
+      "title": "Same forkbench five repetitions in each version",
+      "run": "eager-comparison",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 128,
+        "policy": 1
+      },
+      "text_sha256": "ab460bc1f3af7a2c9f2111af033ec2d94c26cee86606155fde60386b167342d9",
+      "screenshot": "screenshots/fork-comparison.png",
+      "height": 1148,
+      "screenshot_sha256": "5d4d08224e14306515a7fa16b3fe7aab974ade6000f2f78aa85735ebeb20651c",
+      "source_commits": [
+        "24d95707e371f5bba684c601f7841f7488a17ccc",
+        "3341e8218eaa3852a1b02dfb855d22800c929474"
+      ]
+    },
+    {
+      "role": "pressure-comparison",
+      "title": "Same pressure inputs before and after disk paging",
+      "run": "no-swap-pressure",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 8,
+        "policy": 1
+      },
+      "text_sha256": "853bc18af2db3e63bf8cea6d8c383f89bb90af95bfa6e0a5184e8005a65719a0",
+      "screenshot": "screenshots/pressure-comparison.png",
+      "height": 823,
+      "screenshot_sha256": "577f07adfddce9dfb9cb63ae0ebc73c0944d50c92aa269f6ae76b759947b21a5",
+      "source_commits": [
+        "c325f8f0e6e05267684812f5f974adc6734f5ee9",
+        "3341e8218eaa3852a1b02dfb855d22800c929474"
+      ]
+    },
+    {
+      "role": "paging-fifo",
+      "title": "FIFO fork isolation shared paging and counters",
+      "run": "fifo-pressure",
+      "commands": [
+        "swapfork",
+        "threadswap",
+        "memstat"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 8,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "272683302fb2f74f74c118271e6d5df7bdf930e3da0b8ac74f52580166ed6076",
+      "screenshot": "screenshots/paging-fifo.png",
+      "height": 941,
+      "screenshot_sha256": "d8847f8923900e1ce39dc173dbb3e3d68a2c48aa170ab5b2db41deee4d79bc77"
+    },
+    {
+      "role": "paging-clock",
+      "title": "Clock pressure fork isolation and shared paging",
+      "run": "clock-pressure",
+      "commands": [
+        "memhog 4",
+        "memhog 12",
+        "swapfork",
+        "threadswap"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 8,
+        "policy": 2
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "fafbd1048d4bc33f804d5886f3fc10f2eda817053d6cd1fb536b4cbb1fd9f2ff",
+      "screenshot": "screenshots/paging-clock.png",
+      "height": 705,
+      "screenshot_sha256": "86c2b09e78dc5adc10482a978d0469a32b5a836b1de7a71c3a45715f7876afa1"
+    },
+    {
+      "role": "policy-fifo",
+      "title": "FIFO hotcold three fresh boot observations",
+      "run": "fifo-hotcold-1",
+      "commands": null,
+      "note": "Separate fresh boots; only hotcold command output shown",
+      "config": {
+        "cpus": 1,
+        "ram": 8,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "547ed3df086f4e90fe059c36783276824e3ce0d50c49b9209d43c971a91c3eda",
+      "screenshot": "screenshots/policy-fifo.png",
+      "height": 675,
+      "screenshot_sha256": "d40de82381892210cbed3dff08f34cc6edb20aa431a155d5eab0d53f65ad408d"
+    },
+    {
+      "role": "policy-clock",
+      "title": "CLOCK hotcold three fresh boot observations",
+      "run": "clock-hotcold-1",
+      "commands": null,
+      "note": "Separate fresh boots; only hotcold command output shown",
+      "config": {
+        "cpus": 1,
+        "ram": 8,
+        "policy": 2
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "4027d4dd0960733c0eb9056becd86c10232f2c7bf281fb5dd1cf680b72346f85",
+      "screenshot": "screenshots/policy-clock.png",
+      "height": 675,
+      "screenshot_sha256": "8ccda574a747871160c7eaf4cc87d98006d5291843637d48dc2c163a8db59b37"
+    },
+    {
+      "role": "thread-api",
+      "title": "Kernel thread memory futex and library checks",
+      "run": "final-smp-screens",
+      "commands": [
+        "kthreadtest",
+        "threadlife",
+        "threadmem",
+        "futextest",
+        "libtest"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "6d42e91eb8d32e08a7691082537bd1f5731e60429e3fac4dd0f0be6dba13d29e",
+      "screenshot": "screenshots/thread-api.png",
+      "height": 675,
+      "screenshot_sha256": "3f91ffa27aeeb0a58f83007771a0d56a8c3bc06d2f38e480a6bd825c1299d433"
+    },
+    {
+      "role": "shared-results",
+      "title": "Shared results synchronization and lifecycle",
+      "run": "final-smp-screens",
+      "commands": [
+        "threadtest",
+        "racetest",
+        "prodcons",
+        "philosophers",
+        "semtest",
+        "exittest"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "90a50353de1380eb6e564195b87f09a835b6a58e510d20c5af869880fc21e689",
+      "screenshot": "screenshots/shared-results.png",
+      "height": 911,
+      "screenshot_sha256": "48af276139072412f1b67ce9f021c587243c8d42120c7fd7e1b0417c8b9fbf80"
+    },
+    {
+      "role": "parallel-timing",
+      "title": "Fixed workload one two and three workers",
+      "run": "final-smp-screens",
+      "commands": [
+        "speedup 1",
+        "speedup 2",
+        "speedup 3"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "fdf2e4c28764f30f10c644a58ab6867fa76241ee4ecd24158a52c506338d9410",
+      "screenshot": "screenshots/parallel-timing.png",
+      "height": 439,
+      "screenshot_sha256": "7d909bfe3c6002a8a8e19eafad6c8f39fe94a8d57c722b09d44570f1119e7c88"
+    },
+    {
+      "role": "baseline-interfaces",
+      "title": "Earlier image has no added project commands",
+      "run": "baseline-interfaces",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "24d95707e371f5bba684c601f7841f7488a17ccc",
+      "text_sha256": "110ceea1a4fd84dba1b0956eb9ad4aba8147c619acd4d8ccc38b3094a3071631",
+      "screenshot": "screenshots/baseline-interfaces.png",
+      "height": 528,
+      "screenshot_sha256": "73ef215cb56572677f08f7ad95d54a088612c01ea0fa069f0d901d7344726607"
+    },
+    {
+      "role": "trace",
+      "title": "Selected exec tracing and worker mask inheritance",
+      "run": "final-smp-screens",
+      "commands": [
+        "trace 128 echo hi",
+        "tracethread"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "67ca44572936eba85e6b485605e4c145b0a721ac74ca50bbd30e0822dd43f6f5",
+      "screenshot": "screenshots/trace.png",
+      "height": 498,
+      "screenshot_sha256": "5d8cc3066dcfebf102571e3a6809f1181282817274bec7abe8e2fd2b17ac3f9f"
+    },
+    {
+      "role": "signals-debug-life",
+      "title": "Signal cases debugger primitives and lifetime",
+      "run": "final-smp-screens",
+      "commands": [
+        "sigtest",
+        "dbgmini",
+        "dbglife"
+      ],
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "94729777464184f3fab24c4b2e38f94736245063c402284386a01b92af9d50a5",
+      "screenshot": "screenshots/signals-debug-life.png",
+      "height": 705,
+      "screenshot_sha256": "43507ffc34deb56dc0680e50d6d646a6f1a0d0f3570ed5a855698e2fb7256b25"
+    },
+    {
+      "role": "debugger",
+      "title": "Debugger breakpoints known callers and resumed result",
+      "run": "final-smp-screens",
+      "commands": null,
+      "note": "Register dump omitted; breakpoint and backtrace commands retained",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "9585900ba6f413718bc37feae218c0c32c86c77bc871b50389381951ec056894",
+      "screenshot": "screenshots/debugger.png",
+      "height": 1177,
+      "screenshot_sha256": "15bba4325911d3e313e0d7c45832b50807c16925ad6a3ca9c4999635fcfffdc0"
+    },
+    {
+      "role": "combined",
+      "title": "Real workers lazy pages signal and memory snapshots",
+      "run": "final-smp-screens",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "67773e45849b28bede834f46ec69b90ae7729604afebe21fe0096644138d7d1d",
+      "screenshot": "screenshots/combined.png",
+      "height": 911,
+      "screenshot_sha256": "04eaf9ec9370e1b0c6fc5954392be636baecc518adb93b80036289ba4f24a292"
+    },
+    {
+      "role": "memstat-lazy",
+      "title": "Memory snapshots around sparse lazy allocation",
+      "run": "memstat-lazy-observation",
+      "commands": null,
+      "note": "",
+      "config": {
+        "cpus": 1,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "a56c7169c0c5c5a457171a307d784bd688b981b071f3ab8a995833ac61b3ad2a",
+      "screenshot": "screenshots/memstat-lazy.png",
+      "height": 793,
+      "screenshot_sha256": "047eb69c89f7644c95a4ea9aec1a5b273ab40e8b49d1d72a2d1b83ebe082c29b"
+    },
+    {
+      "role": "full-suite",
+      "title": "Final SMP complete inherited regression suite",
+      "run": "final-smp-screens",
+      "commands": null,
+      "note": "Final portion of the full test run",
+      "config": {
+        "cpus": 3,
+        "ram": 128,
+        "policy": 1
+      },
+      "source_commit": "3341e8218eaa3852a1b02dfb855d22800c929474",
+      "text_sha256": "af48b63263e2bf31f8bf22779fe2c8c060bc59125952c9d2d82b47679a0c6e13",
+      "screenshot": "screenshots/full-suite.png",
+      "height": 1059,
+      "screenshot_sha256": "05ed3bfba8e4cf353e6e15212a4b145285c4cb05c67e9feff96c6ef25a57955f"
+    }
+  ]
+}

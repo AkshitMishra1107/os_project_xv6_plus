@@ -1,0 +1,25 @@
+memstat
+page faults      573
+lazy allocations 287
+cow copies       223
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$
+finaldemo
+finaldemo: worker 0 running as tid 1
+finaldemo: worker 1 running as tid 2
+finaldemo: worker 2 running as tid 3
+finaldemo: 3 threads touched 1536 pages, signal 10 received
+finaldemo: lazy allocations 1541, page faults 1544
+$
+memstat
+page faults      2129
+lazy allocations 1832
+cow copies       229
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$

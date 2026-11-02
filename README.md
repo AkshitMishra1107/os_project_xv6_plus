@@ -2,7 +2,7 @@
 
 RISC-V xv6 extended with lazy allocation, copy-on-write fork, disk swapping, kernel threads, futex synchronization, syscall tracing, user signals and an in-guest debugger.
 
-**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The 30-page report focuses on each feature: original behavior, changed functions and modules, implementation mechanism, observed benefit and comparison evidence. It includes selected screenshots, outputs, tests and academic references without full C-file listings.
+**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The 40-page report explains each feature's original behavior, changed functions and modules, implementation mechanism, benefit and comparison justification. It includes 17 actual input/output captures, measured-change tables, tests and mapped academic references without full C-file listings.
 
 ## What the project adds
 
@@ -39,10 +39,13 @@ At the xv6 prompt try `lazytest`, `cowtest`, `racetest`, `prodcons`, `trace 32 c
 
 - A historical 200 MiB eager request failed; lazy reservation succeeded. Reservation does not mean all 200 MiB are resident.
 - The 80 MiB custom COW test changed from fork failure to successful isolation.
-- Historical 50-cycle fork loops observed 38 ticks before COW, 3–4 in COW-only runs and 6 in a later memory integration. These are separate observations, not controlled averages.
+- A matched five-run comparison of the same 50-cycle fork workload observed medians of 44 ticks before the extensions and 7 afterwards: **84.1% fewer median guest ticks for this loop**. This is not a general application speedup.
 - A checked 12 MiB workload failed under an 8 MiB limit before swap and completed with zero mismatches after swap.
+- Three fresh guest boots per policy recorded median hotcold paging totals of 16013 transfers for FIFO and 15375 for Clock: **3.98% fewer transfers for this phase**, not a measured elapsed-time improvement.
 - Thread tests verify protected counter 200000, queue total 10100, two-permit bounds, lifecycle and shared-memory checks.
 - Fresh [combined validation](docs/results/final-integration/README.md) checks the integrated system and its debugger lifecycle repairs. Historical subsystem evidence stays in [memory results](docs/results/memory/README.md), [thread results](docs/results/threads/README.md) and [signals/debugger results](docs/results/signals-debugger/README.md).
+
+The [matched comparison study](docs/results/comparison-study/README.md) retains all samples, actual command records, screenshots, source checks and measurement limits. Its fresh three-CPU full `usertests` run passed. The race and short parallel workloads did not establish a numerical speed improvement; those observations are reported directly.
 
 **Boundaries:** eviction is one-CPU only; SMP builds do not swap. Signals are a compact Unix-inspired subset. Debugging controls a direct opted-in single-context child. Remaining occupied slots in historical pressure runs were not audited to owners; no universal leak-free or performance claim is made.
 

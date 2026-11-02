@@ -1,0 +1,9 @@
+speedup 1
+speedup: OK 1 thread(s), 40000000 iterations, 1 ticks
+$
+speedup 2
+speedup: OK 2 thread(s), 40000000 iterations, 0 ticks
+$
+speedup 3
+speedup: OK 3 thread(s), 40000000 iterations, 1 ticks
+$

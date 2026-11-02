@@ -1,0 +1,33 @@
+[Earlier source 24d95707e371]
+forkbench
+forkbench: 50 forks of a 20 MB process took 40 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 43 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 44 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 46 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 47 ticks
+$
+
+[Extended source 3341e8218eaa]
+forkbench
+forkbench: 50 forks of a 20 MB process took 8 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 7 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 6 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 6 ticks
+$
+forkbench
+forkbench: 50 forks of a 20 MB process took 8 ticks
+$

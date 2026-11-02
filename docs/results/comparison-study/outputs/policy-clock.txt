@@ -1,0 +1,17 @@
+[Fresh boot 1 of 3]
+hotcold
+hotcold: 12 MB, 3 rounds
+hotcold: swap ins 7691, swap outs 7684
+$
+
+[Fresh boot 2 of 3]
+hotcold
+hotcold: 12 MB, 3 rounds
+hotcold: swap ins 7691, swap outs 7684
+$
+
+[Fresh boot 3 of 3]
+hotcold
+hotcold: 12 MB, 3 rounds
+hotcold: swap ins 7691, swap outs 7684
+$

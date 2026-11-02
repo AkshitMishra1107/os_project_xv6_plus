@@ -1,0 +1,22 @@
+[Earlier source c325f8f0e6e0]
+memhog 4
+memhog: starting 4 MB workload
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+$
+memhog 12
+memhog: starting 12 MB workload
+memhog: child exit status -1
+$
+
+[Extended source 3341e8218eaa]
+memhog 4
+memhog: starting 4 MB workload
+memhog: 4 MB, 1024 pages, 0 bad, swap outs 0, swap ins 0
+memhog: child exit status 0
+$
+memhog 12
+memhog: starting 12 MB workload
+memhog: 12 MB, 3072 pages, 0 bad, swap outs 4386, swap ins 3072
+memhog: child exit status 0
+$

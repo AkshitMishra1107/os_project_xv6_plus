@@ -1,0 +1,21 @@
+memstat
+page faults      4
+lazy allocations 2
+cow copies       2
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$
+lazytest
+lazytest: OK (656 pages touched)
+$
+memstat
+page faults      674
+lazy allocations 664
+cow copies       6
+swap outs        0
+swap ins         0
+free pages       32290
+swap slots used  0
+$
