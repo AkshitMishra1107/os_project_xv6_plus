@@ -32,3 +32,8 @@ user/usys.S
 
 # Nano emergency recovery copies are archived privately.
 /kernel/*.save
+
+# Reproducible validation writes local results here by default.
+/validation-output/
+__pycache__/
+*.pyc

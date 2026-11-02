@@ -270,13 +270,18 @@ pick_victim(void)
 
   return -1;
 #elif SWAP_POLICY == POLICY_RANDOM
-  int chosen = -1;
-  uint count = 0;
-  for(int i = 0; i < NFRAMES; i++){
-    if(evictable(i) && random_next() % ++count == 0)
-      chosen = i;
+  // Rejection sampling avoids walking every resident frame for each victim.
+  // Bound the probes so sparse eligibility still has a terminating fallback.
+  for(int n = 0; n < NFRAMES; n++){
+    int i = random_next() % NFRAMES;
+    if(evictable(i))
+      return i;
   }
-  return chosen;
+  for(int i = 0; i < NFRAMES; i++){
+    if(evictable(i))
+      return i;
+  }
+  return -1;
 #else
 #error Unsupported SWAP_POLICY
 #endif
