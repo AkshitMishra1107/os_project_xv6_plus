@@ -2,7 +2,7 @@
 
 RISC-V xv6 extended with lazy allocation, copy-on-write fork, disk swapping, kernel threads, futex synchronization, syscall tracing, user signals and an in-guest debugger.
 
-**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The report explains installation, mechanisms, every changed/added source file, original versus extended behavior, measured results, repairs and limitations. It contains embedded evidence and academic references, without full C-file listings.
+**Start with the [final project report](docs/reports/xv6-plus-final-report.docx), [architecture and source map](docs/architecture.md), and [final validation](docs/results/final-integration/README.md).** The 30-page report focuses on each feature: original behavior, changed functions and modules, implementation mechanism, observed benefit and comparison evidence. It includes selected screenshots, outputs, tests and academic references without full C-file listings.
 
 ## What the project adds
 

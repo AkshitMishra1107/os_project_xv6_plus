@@ -1,7 +1,9 @@
 # Final project report
 
-[Download the full xv6 Plus final report](xv6-plus-final-report.docx).
+[Download the 30-page xv6 Plus final report](xv6-plus-final-report.docx).
 
-Follows the supplied TIET format: A4, Times New Roman, prescribed heading sizes and binding margins, contents, Introduction through References, complete file inventory and evaluator reproduction sequence. It explains installation, original versus changed functions, new file purposes, integration, observed results, limits and mapped MIT/research references. Full C files are intentionally not printed.
+The report follows the supplied TIET format and explains each added feature through its earlier behavior, changed files/functions, implementation mechanism, benefit and validation. It covers memory, threads, synchronization, tracing, signals and the in-guest debugger as one project, with selected embedded comparisons, outputs, screenshots, mapped references and a compact test summary. Complete C files are not printed.
 
-Roll numbers, supervisor details and signatures remain blank because they were not supplied. Official plagiarism/AI checker reports must be attached by the students if required; no score or certificate is invented. The report presents the project together rather than assigning chapters to individuals.
+The previous detailed version is preserved in the local technical archive and Git history. The complete file-purpose inventory remains in [the architecture map](../architecture.md); checkpoint-specific logs and captures remain in [results](../results/final-integration/README.md).
+
+Roll numbers, supervisor details and signatures remain for completion. Attach institution-generated plagiarism/AI review reports when required. The recorded single-CPU full-suite timeout and other implementation limits remain explicit.
