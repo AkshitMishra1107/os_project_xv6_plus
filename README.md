@@ -61,4 +61,10 @@ docs/references.md      MIT labs, papers and specifications
 
 `main` contains the complete project; tags preserve earlier versions. Use a temporary branch while developing, merge reviewed changes and remove that branch afterwards. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Project team: Akshit Mishra, Nikunj Trehan and Pratyaksh Rana. MIT supplies the original xv6 foundation; its [license](LICENSE) and [upstream README](README) remain intact.
+## Group members
+
+- Nikunj Trehan
+- Akshit Mishra
+- Pratyaksh Rana
+
+MIT supplies the original xv6 foundation; its [license](LICENSE) and [upstream README](README) remain intact.
